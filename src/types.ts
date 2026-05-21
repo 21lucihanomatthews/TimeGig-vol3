@@ -39,6 +39,7 @@ export interface Tender {
   closingDate: string;
   status: 'Open' | 'Closed' | 'Awarded';
   coinsCost: number;
+  documentUrl?: string;
 }
 
 export interface ChatMessage {

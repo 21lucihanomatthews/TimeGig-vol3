@@ -1,1 +1,36 @@
 @import "tailwindcss";
+
+@utility glass-panel {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(28px) saturate(225%);
+  -webkit-backdrop-filter: blur(28px) saturate(225%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+@utility glass-card {
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(22px) saturate(200%);
+  -webkit-backdrop-filter: blur(22px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px -10px rgba(0, 0, 0, 0.4);
+}
+
+@utility glass-modal {
+  background: rgba(9, 15, 29, 0.82);
+  backdrop-filter: blur(36px) saturate(240%);
+  -webkit-backdrop-filter: blur(36px) saturate(240%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.61);
+}
+
+@utility glass-tab-active {
+  background: rgba(16, 185, 129, 0.16);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+}
+
+@utility shadow-soft {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.25);
+}

@@ -1,16 +1,55 @@
 import React, { useState } from 'react';
-import { Landmark, Search as SearchIcon, Calendar, DollarSign, ChevronRight, CheckCircle } from 'lucide-react';
+import { Landmark, Search as SearchIcon, Calendar, ChevronRight, CheckCircle, Download, ExternalLink, PlusCircle, X } from 'lucide-react';
 import { Tender } from '../types';
 
 interface TendersViewProps {
   tenders: Tender[];
+  onAddTender?: (tender: Tender) => void;
+  onLoadSamples?: () => void;
 }
 
-export function TendersView({ tenders }: TendersViewProps) {
+export function TendersView({ tenders, onAddTender, onLoadSamples }: TendersViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [applySuccess, setApplySuccess] = useState(false);
+
+  // Custom tender creation states
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newTender, setNewTender] = useState({
+    title: '',
+    department: '',
+    value: '',
+    description: '',
+    closingDate: '',
+    documentUrl: ''
+  });
+
+  const handleCreateTender = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onAddTender) return;
+
+    let valueStr = newTender.value.trim();
+    if (valueStr && !valueStr.startsWith('R') && !valueStr.toLowerCase().startsWith('rand')) {
+      valueStr = `R ${valueStr}`;
+    }
+
+    const tenderVal: Tender = {
+      id: `tender-${Date.now()}`,
+      title: newTender.title,
+      department: newTender.department,
+      value: valueStr || 'R 0 (Undisclosed)',
+      description: newTender.description,
+      closingDate: newTender.closingDate || '2026-12-31',
+      status: 'Open',
+      coinsCost: 15,
+      documentUrl: newTender.documentUrl || 'https://www.etenders.gov.za/'
+    };
+
+    onAddTender(tenderVal);
+    setShowCreateModal(false);
+    setNewTender({ title: '', department: '', value: '', description: '', closingDate: '', documentUrl: '' });
+  };
 
   const filteredTenders = tenders.filter(tender =>
     tender.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -30,14 +69,31 @@ export function TendersView({ tenders }: TendersViewProps) {
     setTimeout(() => {
       setIsApplying(false);
       setApplySuccess(true);
+      if (selectedTender.documentUrl) {
+        window.open(selectedTender.documentUrl, '_blank', 'noopener,noreferrer');
+      }
     }, 1500);
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs">
-        <h3 className="text-xl font-bold text-gray-900 tracking-tight">Government Tenders</h3>
-        <p className="text-sm text-gray-500 mb-4 mt-1">Discover latest local and national government tenders and apply externally.</p>
+      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 tracking-tight">Government Tenders</h3>
+            <p className="text-sm text-gray-500 mt-1">Discover latest local and national government tenders and apply externally.</p>
+          </div>
+          {onAddTender && (
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-xs px-4 py-3 rounded-xl cursor-pointer flex items-center gap-1.5 transition-all shadow-xs shrink-0"
+            >
+              <PlusCircle size={15} />
+              Gazette a Tender
+            </button>
+          )}
+        </div>
         
         <div className="relative">
           <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -53,9 +109,35 @@ export function TendersView({ tenders }: TendersViewProps) {
 
       <div className="space-y-4">
         {filteredTenders.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-            <Landmark className="mx-auto text-gray-300 mb-3" size={48} />
-            <h4 className="text-lg font-bold text-gray-800">No active tenders found</h4>
+          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 p-8 space-y-4 shadow-xs">
+            <Landmark className="mx-auto text-gray-300" size={48} />
+            <div className="space-y-1">
+              <h4 className="text-lg font-bold text-gray-800">No active government tenders listed</h4>
+              <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
+                Start by gazetting a public infrastructure tender, medical supply contract, or load municipal samples instantly.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center pt-2">
+              {onAddTender && (
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-1.5 transition-all shadow-xs"
+                >
+                  <PlusCircle size={14} />
+                  Gazette a Tender Notice
+                </button>
+              )}
+              {onLoadSamples && (
+                <button
+                  type="button"
+                  onClick={onLoadSamples}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all border border-gray-200"
+                >
+                  Load Sample Tenders
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           filteredTenders.map((tender) => (
@@ -136,6 +218,31 @@ export function TendersView({ tenders }: TendersViewProps) {
                 <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{selectedTender.description}</p>
               </div>
 
+              {selectedTender.documentUrl && (
+                <div className="bg-green-50 border-2 border-green-200/60 rounded-2xl p-5 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <h5 className="text-xs font-black text-green-900 uppercase tracking-widest flex items-center gap-1.5">
+                        <Download size={14} className="text-green-600" />
+                        Official Tender Specifications
+                      </h5>
+                      <p className="text-xs text-green-700 font-bold leading-relaxed">
+                        Get the PDF bid invitation specs, municipal standard bidding documents (SBD), and site-briefing notes instantly.
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={selectedTender.documentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                  >
+                    Go to Official Website to Download Documents
+                    <ExternalLink size={14} />
+                  </a>
+                </div>
+              )}
+
               {isApplying ? (
                  <div className="pt-4 border-t border-gray-100 text-center space-y-3 py-4">
                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
@@ -171,6 +278,59 @@ export function TendersView({ tenders }: TendersViewProps) {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Gazette Tender Overlay Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative">
+            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">Gazette a New Tender</h3>
+              <button 
+                type="button"
+                onClick={() => setShowCreateModal(false)} 
+                className="bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full p-1.5 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateTender} className="p-5 space-y-4">
+              <div>
+                <label className="text-xs font-bold text-gray-600 block mb-1">Tender Title / Notice</label>
+                <input required type="text" value={newTender.title} onChange={e => setNewTender({...newTender, title: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. Renovation of local primary school" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-600 block mb-1">Department / Municipality</label>
+                <input required type="text" value={newTender.department} onChange={e => setNewTender({...newTender, department: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. City of Johannesburg Municipality" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Estimated Value (Rand)</label>
+                  <input required type="text" value={newTender.value} onChange={e => setNewTender({...newTender, value: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. R4 200 000" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Bidding Closing Date</label>
+                  <input required type="date" value={newTender.closingDate} onChange={e => setNewTender({...newTender, closingDate: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-600 block mb-1">Specification Document Portal Link (URL)</label>
+                <input required type="url" value={newTender.documentUrl} onChange={e => setNewTender({...newTender, documentUrl: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. https://www.etenders.gov.za/" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-600 block mb-1">Scope of Work & Specification Details</label>
+                <textarea required rows={4} value={newTender.description} onChange={e => setNewTender({...newTender, description: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="State standard bidding documents requirements, briefing meetings and CIDB grading requirements..." />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 rounded-xl transition-all shadow-md mt-2 flex justify-center items-center gap-1.5 cursor-pointer"
+              >
+                <PlusCircle size={16} />
+                Publish Tender Notice
+              </button>
+            </form>
           </div>
         </div>
       )}

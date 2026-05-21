@@ -75,7 +75,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat }: ChatViewProps) {
     setInputText('');
     setShowEmojiPicker(false);
     
-    // Simulate reply
+    // Simulate smart South African response
     setTimeout(simulateReply, 1500);
   };
 
@@ -83,7 +83,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat }: ChatViewProps) {
     if (!selectedContactId) return;
     const replyMessage: ChatMessage = {
       id: (Date.now() + 1).toString(),
-      text: 'Awe, got it! 👍',
+      text: 'Awe, got it! 👍 Let us link up later.',
       senderId: selectedContactId,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       status: 'read'
@@ -118,17 +118,17 @@ export function ChatView({ onAddMediaToGallery, onCloseChat }: ChatViewProps) {
           [selectedContactId]: [...(prev[selectedContactId] || []), newMessage]
         }));
         
-        // Add to Gallery
+        // Add robustly to the system gallery
         const newGalleryItem: GalleryItem = {
           id: `chat_media_${Date.now()}`,
           url: url,
           title: file.name,
-          category: 'Chat Uploads',
+          category: 'Chat Attachments',
           likes: 0
         };
         onAddMediaToGallery(newGalleryItem);
 
-        // Simulate reply to image
+        // Simulate fast reply to media
         setTimeout(simulateReply, 1500);
       };
       
@@ -141,61 +141,61 @@ export function ChatView({ onAddMediaToGallery, onCloseChat }: ChatViewProps) {
   };
 
   return (
-    <div className="h-[calc(100vh-90px)] md:h-[calc(100vh-120px)] -mx-4 -mt-4 bg-gray-50 flex overflow-hidden rounded-t-2xl md:rounded-2xl shadow-xl border border-gray-200">
+    <div className="h-[calc(100vh-100px)] md:h-[calc(100vh-130px)] -mx-4 -mt-4 glass-panel flex overflow-hidden rounded-t-2xl md:rounded-2xl shadow-2xl border border-white/20 relative z-10">
       {/* Contact List Pane */}
-      <div className={`w-full md:w-[350px] lg:w-[400px] border-r border-gray-200 flex flex-col bg-white ${selectedContactId ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`w-full md:w-[350px] lg:w-[400px] border-r border-white/10 flex flex-col bg-slate-900/40 backdrop-blur-xl ${selectedContactId ? 'hidden md:flex' : 'flex'}`}>
         {/* Header */}
-        <div className="p-4 bg-gray-50 flex items-center justify-between border-b border-gray-200">
+        <div className="p-4 bg-slate-900/60 backdrop-blur-md flex items-center justify-between border-b border-white/10">
           <div className="flex items-center gap-2">
-            <button onClick={onCloseChat} className="text-gray-500 hover:text-green-600 transition-colors p-2 rounded-full hover:bg-gray-200">
+            <button onClick={onCloseChat} className="text-zinc-300 hover:text-green-400 transition-colors p-2 rounded-full hover:bg-white/10 cursor-pointer">
               <ArrowLeft size={20} />
             </button>
-            <h2 className="text-xl font-bold tracking-tight text-gray-900">Messages</h2>
+            <h2 className="text-xl font-extrabold tracking-tight text-white">Messages</h2>
           </div>
-          <button className="text-gray-500 hover:text-green-600 transition-colors p-2 rounded-full hover:bg-gray-200">
+          <button className="text-zinc-300 hover:text-green-400 transition-colors p-1.5 rounded-full hover:bg-white/10 cursor-pointer">
             <MoreVertical size={20} />
           </button>
         </div>
         
         {/* Search */}
-        <div className="p-3 border-b border-gray-200 bg-white">
+        <div className="p-3 border-b border-white/10 bg-slate-900/20">
           <div className="relative group">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-600 transition-colors" size={18} />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-green-400 transition-colors" size={18} />
             <input 
               type="text" 
-              placeholder="Search chats" 
-              className="w-full bg-gray-100 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-green-400 focus:shadow-sm transition-all placeholder-gray-500 font-medium"
+              placeholder="Search chats..." 
+              className="w-full bg-white/5 text-white rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none border border-white/10 focus:bg-white/10 transition-all font-semibold"
             />
           </div>
         </div>
 
         {/* Contacts Lists */}
-        <div className="flex-1 overflow-y-auto bg-white scrollbar-thin scrollbar-thumb-gray-200">
+        <div className="flex-grow overflow-y-auto bg-slate-950/20 no-scrollbar">
           {MOCK_CONTACTS.map(contact => (
             <div 
               key={contact.id} 
               onClick={() => setSelectedContactId(contact.id)}
-              className={`flex items-center gap-3 p-3.5 cursor-pointer transition-colors border-b border-gray-50
-                ${selectedContactId === contact.id ? 'bg-green-50/50' : 'hover:bg-gray-50'}
+              className={`flex items-center gap-3 p-3.5 cursor-pointer transition-colors border-b border-white/[0.05]
+                ${selectedContactId === contact.id ? 'bg-green-500/15 border-l-4 border-l-emerald-500 text-white font-bold' : 'hover:bg-white/5 text-zinc-300'}
               `}
             >
               <div className="relative shrink-0">
-                <img src={contact.avatar} alt={contact.name} className="w-12 h-12 rounded-full object-cover" />
+                <img src={contact.avatar} alt={contact.name} className="w-12 h-12 rounded-full object-cover border border-white/10" referrerPolicy="no-referrer" />
                 {contact.online && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-slate-950 rounded-full"></div>
                 )}
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-grow min-w-0">
                 <div className="flex justify-between items-center mb-0.5">
-                  <h4 className="font-bold text-gray-900 truncate">{contact.name}</h4>
-                  <span className={`text-xs ${contact.unreadCount > 0 ? 'text-green-600 font-bold' : 'text-gray-400 font-medium'}`}>
+                  <h4 className="font-bold text-white truncate">{contact.name}</h4>
+                  <span className={`text-[11px] ${contact.unreadCount > 0 ? 'text-emerald-400 font-bold' : 'text-zinc-400 font-medium'}`}>
                     {contact.lastMessageTime}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-500 truncate">{contact.lastMessage}</p>
+                  <p className="text-xs text-zinc-400 truncate">{contact.lastMessage}</p>
                   {contact.unreadCount > 0 && (
-                    <span className="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center shadow-sm">
+                    <span className="bg-emerald-500 text-slate-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full min-w-[18px] text-center shadow-xs">
                       {contact.unreadCount}
                     </span>
                   )}
@@ -207,56 +207,50 @@ export function ChatView({ onAddMediaToGallery, onCloseChat }: ChatViewProps) {
       </div>
 
       {/* Chat Pane */}
-      <div className={`flex-1 flex flex-col bg-[#e5ddd5] relative ${!selectedContactId ? 'hidden md:flex md:items-center md:justify-center' : 'flex'}`}>
+      <div className={`flex-grow flex flex-col bg-slate-950/25 backdrop-blur-md relative ${!selectedContactId ? 'hidden md:flex md:items-center md:justify-center' : 'flex'}`}>
         
         {!selectedContactId ? (
-          <div className="text-center p-8 z-10 bg-white/80 backdrop-blur rounded-3xl shadow-xs border border-white max-w-sm">
-            <div className="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-5 text-green-600 shadow-inner">
+          <div className="text-center p-8 z-10 glass-panel rounded-3xl max-w-sm border border-white/10 m-4 bg-slate-900/60 shadow-xl">
+            <div className="w-20 h-20 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center justify-center mx-auto mb-5 text-emerald-400 shadow-inner">
               <MessageSquare size={36} />
             </div>
-            <h2 className="text-2xl font-black text-gray-800 mb-2">TimeGig Chat</h2>
-            <p className="text-gray-500 text-sm leading-relaxed">Connect and collaborate safely. Select a contact to start messaging.</p>
+            <h2 className="text-2xl font-black text-white mb-2">TimeGig Chat</h2>
+            <p className="text-zinc-350 text-sm leading-relaxed">Connect and collaborate safely with candidates. Select a thread on the left to start messaging.</p>
           </div>
         ) : (
           <>
-            {/* Background Pattern */}
-            <div 
-              className="absolute inset-0 opacity-[0.08]"
-              style={{
-                backgroundImage: 'url("https://www.transparenttextures.com/patterns/cubes.png")',
-                pointerEvents: 'none'
-              }}
-            ></div>
+            {/* Ambient glass background pattern */}
+            <div className="absolute inset-0 bg-radial-gradient from-emerald-550/5 to-transparent pointer-events-none opacity-30"></div>
 
             {/* Chat Header */}
-            <div className="bg-white/95 backdrop-blur-sm px-4 py-3 flex items-center justify-between border-b border-gray-200 shadow-sm z-10 sticky top-0">
+            <div className="bg-slate-900/70 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-white/10 shadow-xs z-10 sticky top-0">
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setSelectedContactId(null)}
-                  className="md:hidden text-gray-500 hover:text-green-600 transition-colors mr-1 p-1"
+                  className="md:hidden text-zinc-300 hover:text-green-400 transition-colors mr-1 p-1 cursor-pointer"
                 >
                   <ArrowLeft size={24} />
                 </button>
                 <div className="relative">
-                  <img src={selectedContact?.avatar} alt={selectedContact?.name} className="w-10 h-10 rounded-full object-cover" />
+                  <img src={selectedContact?.avatar} alt={selectedContact?.name} className="w-10 h-10 rounded-full object-cover border border-white/15" referrerPolicy="no-referrer" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 leading-tight">{selectedContact?.name}</h3>
-                  <p className="text-[11px] font-semibold text-green-600">{selectedContact?.online ? 'Online' : 'Offline'}</p>
+                  <h3 className="font-bold text-white text-[15px] leading-tight">{selectedContact?.name}</h3>
+                  <p className="text-[10px] font-bold text-emerald-455">{selectedContact?.online ? 'Online' : 'Offline'}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 md:gap-4 text-gray-500">
-                <button className="hover:text-green-600 transition-colors p-2 hover:bg-gray-100 rounded-full"><Video size={20} /></button>
-                <button className="hover:text-green-600 transition-colors p-2 hover:bg-gray-100 rounded-full"><Phone size={20} /></button>
-                <div className="w-px h-6 bg-gray-200 hidden md:block"></div>
-                <button className="hover:text-gray-800 transition-colors p-2 hover:bg-gray-100 rounded-full hidden md:block"><MoreVertical size={20} /></button>
+              <div className="flex items-center gap-2 text-zinc-300">
+                <button className="hover:text-green-400 transition-colors p-2 hover:bg-white/5 rounded-full cursor-pointer"><Video size={18} /></button>
+                <button className="hover:text-green-400 transition-colors p-2 hover:bg-white/5 rounded-full cursor-pointer"><Phone size={18} /></button>
+                <div className="w-px h-5 bg-white/10 hidden md:block"></div>
+                <button className="hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full hidden md:block cursor-pointer"><MoreVertical size={18} /></button>
               </div>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 z-10 flex flex-col">
+            <div className="flex-grow overflow-y-auto p-4 space-y-4 z-10 flex flex-col no-scrollbar">
               <div className="flex justify-center mb-6 sticky top-2 z-20">
-                <span className="bg-white/90 backdrop-blur text-gray-600 text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm border border-gray-100 uppercase tracking-widest">
+                <span className="bg-slate-900/90 border border-white/10 text-zinc-300 text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider">
                   Today
                 </span>
               </div>
@@ -268,44 +262,31 @@ export function ChatView({ onAddMediaToGallery, onCloseChat }: ChatViewProps) {
                 return (
                   <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                     <div 
-                      className={`max-w-[85%] md:max-w-[70%] px-4 py-2 relative shadow-sm
-                        ${isMe ? 'bg-[#dcf8c6] text-gray-900' : 'bg-white text-gray-900'}
-                        ${showTail && isMe ? 'rounded-2xl rounded-br-sm' : ''}
-                        ${showTail && !isMe ? 'rounded-2xl rounded-bl-sm' : ''}
-                        ${!showTail ? 'rounded-2xl' : ''}
-                      `}
+                      className={`max-w-[85%] md:max-w-[70%] px-4 py-2.5 relative shadow-soft border ${
+                        isMe 
+                          ? 'bg-emerald-500/20 text-white border-emerald-500/30 rounded-2xl rounded-tr-none' 
+                          : 'bg-slate-900/60 text-zinc-100 border-white/10 rounded-2xl rounded-tl-none'
+                      }`}
                     >
-                      {/* Tail svg for WhatsApp look */}
-                      {showTail && isMe && (
-                        <svg viewBox="0 0 8 13" width="8" height="13" className="absolute top-0 -right-[7px] text-[#dcf8c6] fill-current">
-                          <path d="M5.188 1H0v11.196l4.467-5.583a4.004 4.004 0 00.72-2.434V1z" />
-                        </svg>
-                      )}
-                      {showTail && !isMe && (
-                        <svg viewBox="0 0 8 13" width="8" height="13" className="absolute top-0 -left-[7px] text-white fill-current">
-                          <path d="M2.812 1H8v11.196L3.533 6.613a4.004 4.004 0 01-.72-2.434V1z" />
-                        </svg>
-                      )}
-
                       {msg.mediaUrl && msg.mediaType === 'image' && (
-                        <div className="mb-2 -mx-1 mt-1 rounded-xl overflow-hidden shadow-xs cursor-pointer">
-                          <img src={msg.mediaUrl} alt="attachment" className="max-w-full max-h-64 object-contain" />
+                        <div className="mb-2 -mx-1 mt-1 rounded-xl overflow-hidden shadow-md cursor-pointer border border-white/10 group bg-slate-950">
+                          <img src={msg.mediaUrl} alt="attachment" className="max-w-full max-h-64 object-contain transition-transform group-hover:scale-102" referrerPolicy="no-referrer" />
                         </div>
                       )}
                       
                       {msg.mediaUrl && msg.mediaType === 'video' && (
-                        <div className="mb-2 -mx-1 mt-1 rounded-xl overflow-hidden shadow-xs">
+                        <div className="mb-2 -mx-1 mt-1 rounded-xl overflow-hidden shadow-md border border-white/10 bg-slate-950">
                           <video src={msg.mediaUrl} controls className="max-w-full max-h-64 object-contain" />
                         </div>
                       )}
 
-                      {msg.text && <p className="text-[15px] leading-relaxed break-words">{msg.text}</p>}
-                      <div className={`flex justify-end items-center gap-1.5 mt-1 -mb-1 ${isMe ? 'text-green-800/60' : 'text-gray-400'}`}>
-                        <span className="text-[10px] font-medium">{msg.timestamp}</span>
+                      {msg.text && <p className="text-[14px] leading-relaxed break-words font-medium">{msg.text}</p>}
+                      <div className="flex justify-end items-center gap-1 mt-1 text-[10px] text-zinc-400 font-bold">
+                        <span>{msg.timestamp}</span>
                         {isMe && (
-                          msg.status === 'read' ? <CheckCheck size={14} className="text-blue-500" /> :
-                          msg.status === 'delivered' ? <CheckCheck size={14} /> :
-                          <Check size={14} />
+                          msg.status === 'read' ? <CheckCheck size={13} className="text-emerald-400" /> :
+                          msg.status === 'delivered' ? <CheckCheck size={13} /> :
+                          <Check size={13} />
                         )}
                       </div>
                     </div>
@@ -316,51 +297,45 @@ export function ChatView({ onAddMediaToGallery, onCloseChat }: ChatViewProps) {
             </div>
 
             {/* Input Area */}
-            <div className="bg-[#f0f2f5] p-3 md:p-4 flex flex-col shrink-0 z-10 border-t border-gray-200 relative">
+            <div className="bg-slate-900/60 backdrop-blur-md p-3 md:p-4 flex flex-col shrink-0 z-10 border-t border-white/10 relative">
               {showEmojiPicker && (
-                <div className="absolute bottom-full left-4 mb-2 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 w-64 flex flex-wrap gap-2 z-50">
+                <div className="absolute bottom-full left-4 mb-2 bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-4 w-64 flex flex-wrap gap-2 z-50">
                    {['👍', '😂', '❤️', '🔥', '👏', '🙌', '🎉', '😢', '😍', '🤔', '😎', '✅', '❌', '👌', '🙏', '💯'].map(emoji => (
-                     <button key={emoji} onClick={() => addEmoji(emoji)} className="text-2xl hover:bg-gray-100 p-2 rounded-xl transition-colors">{emoji}</button>
+                     <button key={emoji} onClick={() => addEmoji(emoji)} className="text-2xl hover:bg-white/10 p-1.5 rounded-xl transition-colors cursor-pointer">{emoji}</button>
                    ))}
                 </div>
               )}
               
-              <div className="flex items-end gap-2">
-                <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-gray-500 hover:text-gray-800 p-2.5 transition-colors hidden md:block rounded-full hover:bg-gray-200/50">
-                  <Smile size={24} className={showEmojiPicker ? 'text-green-600' : ''} />
+              <div className="flex items-center gap-2">
+                <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-zinc-400 hover:text-white p-2 transition-colors hidden md:block rounded-full hover:bg-white/5 cursor-pointer">
+                  <Smile size={22} className={showEmojiPicker ? 'text-green-400' : ''} />
                 </button>
-                <div className="relative group">
-                  <button onClick={() => fileInputRef.current?.click()} className="text-gray-500 hover:text-gray-800 p-2.5 transition-colors rounded-full hover:bg-gray-200/50">
-                    <Paperclip size={24} />
+                <div>
+                  <button onClick={() => fileInputRef.current?.click()} className="text-zinc-400 hover:text-white p-2 transition-colors rounded-full hover:bg-white/5 cursor-pointer">
+                    <Paperclip size={22} />
                   </button>
                   <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*,video/*" className="hidden" />
                 </div>
                 
-                <form onSubmit={handleSend} className="flex-1 relative bg-white rounded-3xl shadow-sm border border-gray-100 flex items-end">
-                  <textarea
+                <form onSubmit={handleSend} className="flex-grow bg-white/5 border border-white/10 rounded-full flex items-center px-4 py-1.5 focus-within:bg-white/10 focus-within:border-green-400/40 transition-all">
+                  <input
+                    type="text"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSend();
-                      }
-                    }}
                     placeholder="Type a message..."
-                    className="w-full bg-transparent py-3 px-5 max-h-32 outline-none resize-none border-none text-[15px]"
-                    rows={1}
+                    className="w-full bg-transparent outline-none border-none text-zinc-100 text-sm placeholder-zinc-400"
                   />
                 </form>
                 <button 
                   onClick={() => handleSend()}
                   disabled={!inputText.trim()}
-                  className={`p-3 md:p-3.5 rounded-full flex items-center justify-center shadow-md transition-all shrink-0
+                  className={`p-3 rounded-full flex items-center justify-center shadow-md transition-all shrink-0 cursor-pointer
                     ${inputText.trim() 
-                      ? 'bg-green-600 text-white hover:bg-green-700 pointer-events-auto transform hover:scale-105 active:scale-95' 
-                      : 'bg-green-600/50 text-white pointer-events-none'}
+                      ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500 scale-100' 
+                      : 'bg-white/5 text-zinc-550 border border-white/5 cursor-not-allowed'}
                   `}
                 >
-                  <Send size={20} className="ml-0.5 md:ml-1" />
+                  <Send size={16} />
                 </button>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search as SearchIcon, MapPin, DollarSign, Calendar, Briefcase, ChevronRight, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Search as SearchIcon, MapPin, Coins, Calendar, Briefcase, ChevronRight, CheckCircle, AlertTriangle, PlusCircle, X } from 'lucide-react';
 import { Job } from '../types';
 
 interface JobsViewProps {
@@ -7,9 +7,11 @@ interface JobsViewProps {
   coins: number;
   onApply: (job: Job) => void;
   appliedJobIds: string[];
+  onAddJob?: (job: Job) => void;
+  onLoadSamples?: () => void;
 }
 
-export function JobsView({ jobs, coins, onApply, appliedJobIds }: JobsViewProps) {
+export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoadSamples }: JobsViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedLocation, setSelectedLocation] = useState('All');
@@ -17,6 +19,18 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds }: JobsViewProps)
   const [applyForm, setApplyForm] = useState({ name: '', email: '', pitch: '', portfolioLink: '' });
   const [isApplying, setIsApplying] = useState(false);
   const [applySuccess, setApplySuccess] = useState(false);
+
+  // Job creation state
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newJobState, setNewJobState] = useState({
+    title: '',
+    company: '',
+    description: '',
+    location: '',
+    rate: '',
+    type: 'Full-time',
+    category: 'Technology'
+  });
 
   // Filter Categories
   const categories = ['All', 'Technology', 'Construction', 'Creative', 'Finance', 'Logistics', 'Services'];
@@ -59,12 +73,61 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds }: JobsViewProps)
     }, 1200);
   };
 
+  const handleCreateJobSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onAddJob) return;
+
+    let rateStr = newJobState.rate.trim();
+    if (rateStr && !rateStr.startsWith('R') && !rateStr.toLowerCase().startsWith('rand')) {
+      rateStr = `R ${rateStr}`;
+    }
+
+    const job: Job = {
+      id: `job-${Date.now()}`,
+      title: newJobState.title,
+      company: newJobState.company,
+      description: newJobState.description,
+      location: newJobState.location,
+      rate: rateStr || 'Undisclosed / Negotiable',
+      type: newJobState.type,
+      category: newJobState.category,
+      postedDate: 'Just now',
+      coinsCost: 5
+    };
+
+    onAddJob(job);
+    setShowCreateModal(false);
+    setNewJobState({
+      title: '',
+      company: '',
+      description: '',
+      location: '',
+      rate: '',
+      type: 'Full-time',
+      category: 'Technology'
+    });
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Intro & Search Panel */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs">
-        <h3 className="text-xl font-bold text-gray-900 tracking-tight">Discover Latest Jobs</h3>
-        <p className="text-sm text-gray-500 mb-4 mt-1">Find your next big opportunity and apply directly on the company portal.</p>
+      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 tracking-tight">Discover Latest Jobs</h3>
+            <p className="text-sm text-gray-500 mt-1">Find your next big opportunity and apply directly on the company portal.</p>
+          </div>
+          {onAddJob && (
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-xs px-4 py-3 rounded-xl cursor-pointer flex items-center gap-1.5 transition-all shadow-xs shrink-0"
+            >
+              <PlusCircle size={15} />
+              Post a Job
+            </button>
+          )}
+        </div>
         
         <div className="flex flex-col md:flex-row gap-3">
           <div className="relative flex-grow">
@@ -111,10 +174,35 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds }: JobsViewProps)
       {/* Main Jobs Listing */}
       <div className="space-y-4">
         {filteredJobs.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-            <Briefcase className="mx-auto text-gray-300 mb-3" size={48} />
-            <h4 className="text-lg font-bold text-gray-800">No jobs fit those tags</h4>
-            <p className="text-sm text-gray-500 mt-1">Try resetting search or filters to see more listings.</p>
+          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 p-8 space-y-4 shadow-xs">
+            <Briefcase className="mx-auto text-gray-300" size={48} />
+            <div className="space-y-1">
+              <h4 className="text-lg font-bold text-gray-800">No active job vacancies listed</h4>
+              <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
+                Start by posting a corporate job opportunity, full-time search vacancy, or import South African sample configurations instantly.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center pt-2">
+              {onAddJob && (
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-1.5 transition-all shadow-xs"
+                >
+                  <PlusCircle size={14} />
+                  Post a Job Opportunity
+                </button>
+              )}
+              {onLoadSamples && (
+                <button
+                  type="button"
+                  onClick={onLoadSamples}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all border border-gray-200"
+                >
+                  Load Sample Job Listings
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           filteredJobs.map((job) => {
@@ -144,7 +232,7 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds }: JobsViewProps)
                       {job.location}
                     </div>
                     <div className="flex items-center gap-1 font-semibold text-emerald-600">
-                      <DollarSign size={14} />
+                      <Coins size={14} />
                       {job.rate}
                     </div>
                   </div>
@@ -192,7 +280,7 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds }: JobsViewProps)
             <div className="p-6 max-h-[60vh] overflow-y-auto space-y-6">
               <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <span className="text-xs text-gray-500 block mb-1 flex items-center gap-1"><DollarSign size={14}/> salary/rate</span>
+                    <span className="text-xs text-gray-500 block mb-1 flex items-center gap-1"><Coins size={14}/> Salary / Rate</span>
                     <span className="font-bold text-emerald-600 text-lg">{selectedJob.rate}</span>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
@@ -241,6 +329,77 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds }: JobsViewProps)
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Job Overlay Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative">
+            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">Post a Job Opportunity</h3>
+              <button 
+                type="button"
+                onClick={() => setShowCreateModal(false)} 
+                className="bg-gray-200 hover:bg-gray-300 rounded-full p-1.5 transition-colors cursor-pointer text-gray-600"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateJobSubmit} className="p-5 space-y-4">
+              <div>
+                <label className="text-xs font-bold text-gray-600 block mb-1">Job Title</label>
+                <input required type="text" value={newJobState.title} onChange={e => setNewJobState({...newJobState, title: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. Senior Frontend Engineer" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-600 block mb-1">Company / Organization</label>
+                <input required type="text" value={newJobState.company} onChange={e => setNewJobState({...newJobState, company: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. Vodacom South Africa" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Job Category</label>
+                  <select value={newJobState.category} onChange={e => setNewJobState({...newJobState, category: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500">
+                    <option value="Technology">Technology</option>
+                    <option value="Construction">Construction</option>
+                    <option value="Creative">Creative</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Logistics">Logistics</option>
+                    <option value="Services">Services</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Job Type</label>
+                  <select value={newJobState.type} onChange={e => setNewJobState({...newJobState, type: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500">
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Remote">Remote</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Salary / Remuneration (Rand)</label>
+                  <input required type="text" value={newJobState.rate} onChange={e => setNewJobState({...newJobState, rate: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. R45 000 / month" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Location / City</label>
+                  <input required type="text" value={newJobState.location} onChange={e => setNewJobState({...newJobState, location: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. Sandton, JHB" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-600 block mb-1">Description & Requirements</label>
+                <textarea required rows={4} value={newJobState.description} onChange={e => setNewJobState({...newJobState, description: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="State keys skills, duties and qualification parameters..." />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 rounded-xl transition-all shadow-md mt-2 flex justify-center items-center gap-1.5 cursor-pointer"
+              >
+                <PlusCircle size={16} />
+                Activate Job Listing
+              </button>
+            </form>
           </div>
         </div>
       )}
