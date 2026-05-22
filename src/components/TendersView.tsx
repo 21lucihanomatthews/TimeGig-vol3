@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Landmark, Search as SearchIcon, Calendar, ChevronRight, CheckCircle, Download, ExternalLink, PlusCircle, X, Lock } from 'lucide-react';
 import { Tender } from '../types';
-import { T } from './TranslationProvider';
+import { T, useLanguage } from './TranslationProvider';
 
 interface TendersViewProps {
   tenders: Tender[];
@@ -12,6 +12,7 @@ interface TendersViewProps {
 }
 
 export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSignUp }: TendersViewProps) {
+  const { translateText } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
   const [isApplying, setIsApplying] = useState(false);
@@ -113,7 +114,7 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
           <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text"
-            placeholder="Search departments or notice titles..."
+            placeholder={translateText("Search departments or notice titles...")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-gray-50 text-gray-900 pl-11 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 transition-colors"
@@ -140,15 +141,6 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
                 >
                   <PlusCircle size={14} />
                   <T>Gazette a Tender Notice</T>
-                </button>
-              )}
-              {onLoadSamples && (
-                <button
-                  type="button"
-                  onClick={onLoadSamples}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all border border-gray-200"
-                >
-                  <T>Load Sample Tenders</T>
                 </button>
               )}
             </div>
@@ -185,7 +177,7 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
                 {isGuest ? (
                   <div className="bg-gray-100 text-gray-400 px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-dashed border-gray-200">
                     <Lock size={14} />
-                    View Locked
+                    <T>View Locked</T>
                   </div>
                 ) : (
                   <button
@@ -214,29 +206,29 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
             </div>
 
             <div className="p-6 pb-4 border-b border-gray-100 bg-gray-50 pt-10">
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${selectedTender.status === 'Open' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-700'}`}>{selectedTender.status}</span>
-              <h3 className="text-2xl font-black text-gray-900 mt-3 tracking-tight">{selectedTender.title}</h3>
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${selectedTender.status === 'Open' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-700'}`}><T>{selectedTender.status}</T></span>
+              <h3 className="text-2xl font-black text-gray-900 mt-3 tracking-tight"><T>{selectedTender.title}</T></h3>
               <p className="text-sm font-semibold text-gray-600 mt-1 flex items-center gap-2">
                 <Landmark size={16} className="text-gray-400" />
-                {selectedTender.department}
+                <T>{selectedTender.department}</T>
               </p>
             </div>
 
             <div className="p-6 max-h-[60vh] overflow-y-auto space-y-6">
               <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <span className="text-xs text-gray-500 block mb-1">Estimated Value</span>
-                    <span className="font-bold text-green-600 text-lg">{selectedTender.value}</span>
+                    <span className="text-xs text-gray-500 block mb-1"><T>Estimated Value</T></span>
+                    <span className="font-bold text-green-600 text-lg"><T>{selectedTender.value}</T></span>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <span className="text-xs text-gray-500 block mb-1">Closing Date</span>
-                    <span className="font-bold text-gray-700">{selectedTender.closingDate}</span>
+                    <span className="text-xs text-gray-500 block mb-1"><T>Closing Date</T></span>
+                    <span className="font-bold text-gray-700"><T>{selectedTender.closingDate}</T></span>
                   </div>
               </div>
 
               <div>
-                <h5 className="text-sm font-bold text-gray-800 mb-2">Tender Description</h5>
-                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{selectedTender.description}</p>
+                <h5 className="text-sm font-bold text-gray-800 mb-2"><T>Tender Description</T></h5>
+                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line"><T>{selectedTender.description}</T></p>
               </div>
 
               {selectedTender.documentUrl && (
@@ -245,10 +237,10 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
                     <div className="space-y-1">
                       <h5 className="text-xs font-black text-green-900 uppercase tracking-widest flex items-center gap-1.5">
                         <Download size={14} className="text-green-600" />
-                        Official Tender Specifications
+                        <T>Official Tender Specifications</T>
                       </h5>
                       <p className="text-xs text-green-700 font-bold leading-relaxed">
-                        Get the PDF bid invitation specs, municipal standard bidding documents (SBD), and site-briefing notes instantly.
+                        <T>Get the PDF bid invitation specs, municipal standard bidding documents (SBD), and site-briefing notes instantly.</T>
                       </p>
                     </div>
                   </div>
@@ -258,7 +250,7 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
                     rel="noopener noreferrer"
                     className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
                   >
-                    Go to Official Website to Download Documents
+                    <T>Go to Official Website to Download Documents</T>
                     <ExternalLink size={14} />
                   </a>
                 </div>
@@ -267,29 +259,29 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
               {isApplying ? (
                 <div className="pt-4 border-t border-gray-100 text-center space-y-3 py-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                  <h4 className="text-md font-bold text-gray-900">Redirecting...</h4>
-                  <p className="text-xs text-gray-500">Taking you to official gov site...</p>
+                  <h4 className="text-md font-bold text-gray-900"><T>Redirecting...</T></h4>
+                  <p className="text-xs text-gray-500"><T>Taking you to official gov site...</T></p>
                 </div>
               ) : applySuccess ? (
                 <div className="pt-4 border-t border-gray-100 text-center space-y-3 py-4">
                   <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600">
                     <CheckCircle size={32} />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-900">Site Opened!</h4>
-                  <p className="text-xs text-gray-500 mx-auto max-w-xs">Follow the steps on the government portal to submit your documents and bids.</p>
+                  <h4 className="text-lg font-bold text-gray-900"><T>Site Opened!</T></h4>
+                  <p className="text-xs text-gray-500 mx-auto max-w-xs"><T>Follow the steps on the government portal to submit your documents and bids.</T></p>
                   <button
                     onClick={() => setSelectedTender(null)}
                     className="mt-2 bg-gray-100 hover:bg-gray-200 font-bold px-5 py-2 rounded-xl text-xs"
                   >
-                    Close
+                    <T>Close</T>
                   </button>
                 </div>
               ) : isGuest ? (
                 <div className="pt-4 border-t border-gray-100 text-center space-y-4 py-4">
                   <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl space-y-2">
                     <Lock className="mx-auto text-indigo-500" size={24} />
-                    <h4 className="text-sm font-extrabold text-indigo-900 uppercase">Tenders Feature Locked</h4>
-                    <p className="text-[11px] text-indigo-700 font-medium">To view official documents and apply for national government tenders, your company must be verified.</p>
+                    <h4 className="text-sm font-extrabold text-indigo-900 uppercase"><T>Tenders Feature Locked</T></h4>
+                    <p className="text-[11px] text-indigo-700 font-medium"><T>To view official documents and apply for national government tenders, your company must be verified.</T></p>
                   </div>
                   <button
                     onClick={() => {
@@ -298,7 +290,7 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
                     }}
                     className="w-full py-4 rounded-xl font-bold text-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-md"
                   >
-                    Verify Company Now
+                    <T>Verify Company Now</T>
                   </button>
                 </div>
               ) : (
@@ -310,7 +302,7 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
                       selectedTender.status === 'Open' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
                     }`}
                   >
-                    Apply on Gov Portal
+                    <T>Apply on Gov Portal</T>
                     <ChevronRight size={20} />
                   </button>
                 </div>
@@ -325,7 +317,7 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative">
             <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-900">Gazette a New Tender</h3>
+              <h3 className="font-bold text-lg text-gray-900"><T>Gazette a New Tender</T></h3>
               <button 
                 type="button"
                 onClick={() => setShowCreateModal(false)} 
@@ -336,37 +328,37 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
             </div>
             <form onSubmit={handleCreateTender} className="p-5 space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-600 block mb-1">Tender Title / Notice</label>
-                <input required type="text" value={newTender.title} onChange={e => setNewTender({...newTender, title: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. Renovation of local primary school" />
+                <label className="text-xs font-bold text-gray-600 block mb-1"><T>Tender Title / Notice</T></label>
+                <input required type="text" value={newTender.title} onChange={e => setNewTender({...newTender, title: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("e.g. Renovation of local primary school")} />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 block mb-1">Department / Municipality</label>
-                <input required type="text" value={newTender.department} onChange={e => setNewTender({...newTender, department: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. City of Johannesburg Municipality" />
+                <label className="text-xs font-bold text-gray-600 block mb-1"><T>Department / Municipality</T></label>
+                <input required type="text" value={newTender.department} onChange={e => setNewTender({...newTender, department: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("e.g. City of Johannesburg Municipality")} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">Estimated Value (Rand)</label>
-                  <input required type="text" value={newTender.value} onChange={e => setNewTender({...newTender, value: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. R4 200 000" />
+                  <label className="text-xs font-bold text-gray-600 block mb-1"><T>Estimated Value (Rand)</T></label>
+                  <input required type="text" value={newTender.value} onChange={e => setNewTender({...newTender, value: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("e.g. R4 200 000")} />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">Bidding Closing Date</label>
+                  <label className="text-xs font-bold text-gray-600 block mb-1"><T>Bidding Closing Date</T></label>
                   <input required type="date" value={newTender.closingDate} onChange={e => setNewTender({...newTender, closingDate: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 block mb-1">Specification Document Portal Link (URL)</label>
-                <input required type="url" value={newTender.documentUrl} onChange={e => setNewTender({...newTender, documentUrl: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. https://www.etenders.gov.za/" />
+                <label className="text-xs font-bold text-gray-600 block mb-1"><T>Specification Document Portal Link (URL)</T></label>
+                <input required type="url" value={newTender.documentUrl} onChange={e => setNewTender({...newTender, documentUrl: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("e.g. https://www.etenders.gov.za/")} />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 block mb-1">Scope of Work & Specification Details</label>
-                <textarea required rows={4} value={newTender.description} onChange={e => setNewTender({...newTender, description: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="State standard bidding documents requirements, briefing meetings and CIDB grading requirements..." />
+                <label className="text-xs font-bold text-gray-600 block mb-1"><T>Scope of Work & Specification Details</T></label>
+                <textarea required rows={4} value={newTender.description} onChange={e => setNewTender({...newTender, description: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("State standard bidding documents requirements, briefing meetings and CIDB grading requirements...")} />
               </div>
               <button
                 type="submit"
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 rounded-xl transition-all shadow-md mt-2 flex justify-center items-center gap-1.5 cursor-pointer"
               >
                 <PlusCircle size={16} />
-                Publish Tender Notice
+                <T>Publish Tender Notice</T>
               </button>
             </form>
           </div>
@@ -377,9 +369,9 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
       {showGuestPrompt && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Registration Required</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2"><T>Registration Required</T></h3>
             <p className="text-gray-600 text-sm mb-6">
-              You must register your company to view full tender specifications and submit bids. 
+              <T>You must register your company to view full tender specifications and submit bids.</T>
             </p>
             <div className="space-y-3">
                <button 
@@ -389,13 +381,13 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
                  }}
                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all"
                >
-                 Verify Company
+                 <T>Verify Company</T>
                </button>
                <button 
                  onClick={() => setShowGuestPrompt(false)}
                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition-colors"
                >
-                 Cancel
+                 <T>Cancel</T>
                </button>
             </div>
           </div>

@@ -11,6 +11,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+import { T } from './TranslationProvider';
+
 interface CompanySignupViewProps {
   onComplete: () => void;
   onSkip: () => void;
@@ -93,10 +95,10 @@ export default function CompanySignupView({
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
           <Building2 size={48} className="mx-auto text-white mb-4" />
           <h1 className="text-3xl font-black text-white mb-2">
-            Company Portal
+            <T>Company Portal</T>
           </h1>
           <p className="text-indigo-200 text-sm">
-            Join TimeGig's network of vetted businesses
+            <T>Join TimeGig's network of vetted businesses</T>
           </p>
         </div>
 
@@ -107,23 +109,22 @@ export default function CompanySignupView({
               animate={{ opacity: 1 }}
               className="space-y-6"
             >
-              <div className="space-y-4 text-center mb-8">
+                <div className="space-y-4 text-center mb-8">
                 <div className="inline-flex items-center gap-1.5 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold mb-2">
                   <ShieldCheck size={14} />
-                  100% Verified & Legitimate Platform
+                  <T>100% Verified & Legitimate Platform</T>
                 </div>
                 <p className="text-gray-600 font-medium">
-                  Register your company to access exclusive tenders, post jobs,
-                  and hire verified local professionals securely.
+                  <T>Register your company to access exclusive tenders, post jobs, and hire verified local professionals securely.</T>
                 </p>
                 <div className="bg-indigo-50 p-4 rounded-xl text-left border border-indigo-100">
                   <h4 className="font-bold text-indigo-900 text-sm mb-2">
-                    Required Documents:
+                    <T>Required Documents</T>:
                   </h4>
                   <ul className="text-xs text-indigo-800 space-y-1 ml-4 list-disc font-medium">
-                    <li>Company Registration (CIPC)</li>
-                    <li>Valid Tax Clearance Certificate</li>
-                    <li>(PDF, DOC, or DOCX formats only)</li>
+                    <li><T>Company Registration (CIPC)</T></li>
+                    <li><T>Valid Tax Clearance Certificate</T></li>
+                    <li>(<T>PDF, DOC, or DOCX formats only</T>)</li>
                   </ul>
                 </div>
               </div>
@@ -132,25 +133,25 @@ export default function CompanySignupView({
                   onClick={() => setStep(2)}
                   className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl transition-all active:scale-95 shadow-md shadow-indigo-200"
                 >
-                  Apply Now <ArrowRight size={18} />
+                  <T>Apply Now</T> <ArrowRight size={18} />
                 </button>
                 <button
                   onClick={() => setIsLoginView(true)}
                   className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-3.5 rounded-xl transition-colors border border-indigo-200"
                 >
-                  Log In to Account
+                  <T>Log In to Account</T>
                 </button>
                 <button
                   onClick={onSkip}
                   className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition-colors"
                 >
-                  Skip and Explore App
+                  <T>Skip and Explore App</T>
                 </button>
                 <button
                   onClick={onSwitchType}
                   className="w-full text-indigo-600 font-bold text-[10px] uppercase tracking-wider py-2 hover:bg-indigo-50 rounded-lg transition-colors border border-dashed border-indigo-200"
                 >
-                  Not a Company? Sign up as an Individual
+                  <T>Not a Company? Sign up as an Individual</T>
                 </button>
               </div>
             </motion.div>
@@ -163,36 +164,36 @@ export default function CompanySignupView({
               className="space-y-5"
             >
               <div className="text-center mb-6">
-                <h3 className="text-xl font-bold text-gray-900">Welcome Back</h3>
-                <p className="text-sm text-gray-500">Log in to your workspace</p>
+                <h3 className="text-xl font-bold text-gray-900"><T>Welcome Back</T></h3>
+                <p className="text-sm text-gray-500"><T>Log in to your workspace</T></p>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">
-                    Company Email
+                    <T>Company Email</T>
                   </label>
-                  <input
-                    type="email"
-                    required
-                    value={companyEmail}
-                    onChange={(e) => setCompanyEmail(e.target.value)}
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 font-medium"
-                    placeholder="name@company.com"
-                  />
+                    <input
+                      required
+                      type="email"
+                      value={companyEmail}
+                      onChange={(e) => setCompanyEmail(e.target.value)}
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 font-medium"
+                      placeholder="name@company.com"
+                    />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">
-                    Password
+                    <T>Password</T>
                   </label>
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 font-medium"
-                    placeholder="••••••••"
-                  />
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 font-medium"
+                      placeholder="••••••••"
+                    />
                 </div>
 
                 <div className="space-y-3 pt-2">
@@ -204,10 +205,10 @@ export default function CompanySignupView({
                     {isLoginLoading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        Authenticating...
+                        <T>Authenticating...</T>
                       </>
                     ) : (
-                      "Log In"
+                      <T>Log In</T>
                     )}
                   </button>
                   <button
@@ -215,7 +216,7 @@ export default function CompanySignupView({
                     onClick={() => setIsLoginView(false)}
                     className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition-colors text-sm"
                   >
-                    Back to Registration
+                    <T>Back to Registration</T>
                   </button>
                 </div>
               </form>
@@ -227,34 +228,34 @@ export default function CompanySignupView({
               <form onSubmit={handleApply} className="space-y-5">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">
-                    Company Name
+                    <T>Company Name</T>
                   </label>
-                  <input
-                    required
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 font-medium"
-                    placeholder="e.g. Acme Corp Pty Ltd"
-                  />
+                    <input
+                      required
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 font-medium"
+                      placeholder="e.g. Acme Corp Pty Ltd"
+                    />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">
-                    Email Address
+                    <T>Email Address</T>
                   </label>
-                  <input
-                    required
-                    type="email"
-                    value={companyEmail}
-                    onChange={(e) => setCompanyEmail(e.target.value)}
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 font-medium"
-                    placeholder="info@company.co.za"
-                  />
+                    <input
+                      required
+                      type="email"
+                      value={companyEmail}
+                      onChange={(e) => setCompanyEmail(e.target.value)}
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 font-medium"
+                      placeholder="info@company.co.za"
+                    />
                 </div>
 
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">
-                    Upload Documents (Min. 2)
+                    <T>Upload Documents (Min. 2)</T>
                   </label>
 
                   {documents.length > 0 && (
@@ -270,7 +271,7 @@ export default function CompanySignupView({
                               className="text-gray-500 shrink-0"
                             />
                             <span className="text-xs font-medium text-gray-800 truncate">
-                              {doc.name}
+                              <T>{doc.name}</T>
                             </span>
                           </div>
                           <button
@@ -295,10 +296,10 @@ export default function CompanySignupView({
                     />
                     <UploadCloud size={24} className="mb-2 text-gray-400" />
                     <span className="text-sm font-semibold text-gray-600">
-                      Tap to upload documents
+                      <T>Tap to upload documents</T>
                     </span>
                     <span className="text-xs text-gray-400 mt-1">
-                      Files supported: PDF, DOCX
+                      <T>Files supported: PDF, DOCX</T>
                     </span>
                   </label>
                 </div>
@@ -309,14 +310,14 @@ export default function CompanySignupView({
                     onClick={() => setStep(1)}
                     className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-4 rounded-xl transition-all active:scale-95"
                   >
-                    Back
+                    <T>Back</T>
                   </button>
                   <button
                     type="submit"
                     disabled={!companyName || documents.length < 2}
                     className="bg-slate-900 hover:bg-slate-800 disabled:bg-gray-300 disabled:text-gray-500 text-white font-bold py-4 rounded-xl transition-all active:scale-95 shadow-md flex-grow"
                   >
-                    Submit Application
+                    <T>Submit Application</T>
                   </button>
                 </div>
               </form>
@@ -331,10 +332,10 @@ export default function CompanySignupView({
             >
               <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
               <h3 className="text-lg font-bold text-gray-900">
-                Verifying Documents...
+                <T>Verifying Documents...</T>
               </h3>
               <p className="text-sm text-gray-500 mt-2">
-                Checking company registration and tax clearance.
+                <T>Checking company registration and tax clearance.</T>
               </p>
             </motion.div>
           )}
@@ -347,12 +348,10 @@ export default function CompanySignupView({
             >
               <XCircle size={64} className="mx-auto text-red-500 mb-4" />
               <h3 className="text-2xl font-black text-gray-900 mb-2">
-                Application Declined
+                <T>Application Declined</T>
               </h3>
               <p className="text-sm text-gray-600 mb-8">
-                Your verification failed. Ensure you have uploaded at least two
-                valid PDF or DOCX documents (e.g. CIPC Registration and Tax
-                Clearance). Unsupported formats like Images will be rejected.
+                <T>Your verification failed. Ensure you have uploaded at least two valid PDF or DOCX documents (e.g. CIPC Registration and Tax Clearance). Unsupported formats like Images will be rejected.</T>
               </p>
               <button
                 onClick={() => {
@@ -361,7 +360,7 @@ export default function CompanySignupView({
                 }}
                 className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3.5 rounded-xl transition-colors"
               >
-                Try Again
+                <T>Try Again</T>
               </button>
             </motion.div>
           )}
@@ -374,18 +373,16 @@ export default function CompanySignupView({
             >
               <CheckCircle size={64} className="mx-auto text-green-500 mb-4" />
               <h3 className="text-2xl font-black text-gray-900 mb-2">
-                Application Approved!
+                <T>Application Approved!</T>
               </h3>
               <p className="text-sm text-gray-600 mb-8">
-                Your company has been successfully vetted and registered. Final
-                step: Complete your personal profile from the top right menu to
-                become a fully verified user.
+                <T>Your company has been successfully vetted and registered. Final step: Complete your personal profile from the top right menu to become a fully verified user.</T>
               </p>
               <button
                 onClick={onComplete}
                 className="w-full flex justify-center items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl transition-all shadow-md shadow-green-200"
               >
-                Enter Workspace <ArrowRight size={18} />
+                <T>Enter Workspace</T> <ArrowRight size={18} />
               </button>
             </motion.div>
           )}

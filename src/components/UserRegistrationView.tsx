@@ -12,6 +12,8 @@ import {
   Loader2
 } from "lucide-react";
 
+import { T } from './TranslationProvider';
+
 interface UserRegistrationViewProps {
   onComplete: (email: string) => void;
   onSkip: () => void;
@@ -106,8 +108,8 @@ export default function UserRegistrationView({
                 <MessageSquare size={18} />
               </div>
               <div>
-                <h4 className="text-xs font-black uppercase tracking-wider text-indigo-300">New Message</h4>
-                <p className="text-sm font-medium mt-1">Your TimeGig verification code is: <span className="font-black text-lg tracking-widest text-indigo-400">{generatedPin}</span></p>
+                <h4 className="text-xs font-black uppercase tracking-wider text-indigo-300"><T>New Message</T></h4>
+                <p className="text-sm font-medium mt-1"><T>Your TimeGig verification code is:</T> <span className="font-black text-lg tracking-widest text-indigo-400">{generatedPin}</span></p>
               </div>
               <button 
                 onClick={() => setShowPinNotification(false)}
@@ -129,10 +131,10 @@ export default function UserRegistrationView({
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
           <User size={48} className="mx-auto text-white mb-4" />
           <h1 className="text-3xl font-black text-white mb-2">
-            User Signup
+            <T>User Signup</T>
           </h1>
           <p className="text-indigo-200 text-sm">
-            Create your local worker profile
+            <T>Create your local worker profile</T>
           </p>
         </div>
 
@@ -147,7 +149,7 @@ export default function UserRegistrationView({
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">
-                      Email Address
+                      <T>Email Address</T>
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -164,7 +166,7 @@ export default function UserRegistrationView({
 
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">
-                      Password
+                      <T>Password</T>
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -191,7 +193,7 @@ export default function UserRegistrationView({
                     required
                   />
                   <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed cursor-pointer">
-                    I accept the <span className="text-indigo-600 font-bold underline cursor-pointer">Terms and Conditions</span> and understand that my identity will be vetted for trust and safety.
+                    <T>I accept the</T> <span className="text-indigo-600 font-bold underline cursor-pointer"><T>Terms and Conditions</T></span> <T>and understand that my identity will be vetted for trust and safety.</T>
                   </label>
                 </div>
 
@@ -203,7 +205,7 @@ export default function UserRegistrationView({
                   {isLoading ? (
                     <Loader2 className="animate-spin" size={20} />
                   ) : (
-                    <>Sign Up <ArrowRight size={18} /></>
+                    <><T>Sign Up</T> <ArrowRight size={18} /></>
                   )}
                 </button>
               </form>
@@ -214,18 +216,18 @@ export default function UserRegistrationView({
                   onClick={onBackToCompany}
                   className="w-full text-indigo-600 font-bold text-xs uppercase tracking-wider py-2 hover:bg-indigo-50 rounded-lg transition-colors"
                 >
-                  Switch to Company Portal
+                  <T>Switch to Company Portal</T>
                 </button>
                 <div className="flex items-center gap-4 py-2">
                   <div className="h-px flex-grow bg-gray-100"></div>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Or</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest"><T>Or</T></span>
                   <div className="h-px flex-grow bg-gray-100"></div>
                 </div>
                 <button
                   onClick={onSkip}
                   className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors text-sm"
                 >
-                  Continue as Guest
+                  <T>Continue as Guest</T>
                 </button>
               </div>
             </motion.div>
@@ -239,9 +241,9 @@ export default function UserRegistrationView({
                 <ShieldCheck size={32} />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-900">Verify your identity</h3>
+                <h3 className="text-xl font-bold text-gray-900"><T>Verify your identity</T></h3>
                 <p className="text-sm text-gray-500 mt-1 px-4">
-                  We've sent a 4-digit code to your mobile device via the app.
+                  <T>We've sent a 4-digit code to your mobile device via the app.</T>
                 </p>
               </div>
 
@@ -262,7 +264,7 @@ export default function UserRegistrationView({
               </div>
 
               {pinError && (
-                <p className="text-xs font-bold text-red-500">{pinError}</p>
+                <p className="text-xs font-bold text-red-500"><T>{pinError}</T></p>
               )}
 
               <div className="space-y-4 pt-4">
@@ -271,7 +273,7 @@ export default function UserRegistrationView({
                   disabled={pin.some(d => d === "") || isLoading}
                   className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white font-bold py-4 rounded-xl transition-all shadow-md shadow-indigo-100 flex items-center justify-center gap-2"
                 >
-                  {isLoading ? <Loader2 className="animate-spin" size={20} /> : "Verify and Continue"}
+                  {isLoading ? <Loader2 className="animate-spin" size={20} /> : <T>Verify and Continue</T>}
                 </button>
                 
                 <button
@@ -279,7 +281,7 @@ export default function UserRegistrationView({
                   onClick={() => setStep(1)}
                   className="inline-flex items-center gap-1 text-gray-500 hover:text-indigo-600 font-bold text-sm transition-colors"
                 >
-                  <ChevronLeft size={16} /> Change Email
+                  <ChevronLeft size={16} /> <T>Change Email</T>
                 </button>
               </div>
             </motion.div>
@@ -288,7 +290,7 @@ export default function UserRegistrationView({
       </motion.div>
       
       <div className="mt-8 text-[11px] font-bold text-gray-400 uppercase tracking-widest text-center">
-        Trusted by 5,000+ local South African professionals
+        <T>Trusted by 5,000+ local South African professionals</T>
       </div>
     </div>
   );

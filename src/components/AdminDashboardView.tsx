@@ -22,6 +22,8 @@ import {
   Trash2
 } from 'lucide-react';
 
+import { T, useLanguage } from './TranslationProvider';
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -63,16 +65,8 @@ interface AdminDashboardViewProps {
   onToggleLookingForJobs?: (userId: string) => void;
 }
 
-export function AdminDashboardView({
-  transactions,
-  onApprovePayment,
-  onRejectPayment,
-  users,
-  onAddUser,
-  wallpaper,
-  onSetWallpaper,
-  onToggleLookingForJobs
-}: AdminDashboardViewProps) {
+export function AdminDashboardView({ transactions, onApprovePayment, onRejectPayment, users, onAddUser, wallpaper, onSetWallpaper, onToggleLookingForJobs }: AdminDashboardViewProps) {
+  const { translateText } = useLanguage();
   const [successToast, setSuccessToast] = useState<string | null>(null);
   
   // Search filter
@@ -122,12 +116,12 @@ export function AdminDashboardView({
           <div className="flex items-center gap-2">
             <Shield className="text-emerald-400" size={24} />
             <span className="text-xs bg-emerald-400/20 text-emerald-300 font-extrabold px-3 py-1 rounded-full uppercase tracking-widest border border-emerald-400/20">
-              System Admin
+              <T>System Admin</T>
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl font-black tracking-tight mt-1">Mzansi Gig Network Controller</h2>
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight mt-1"><T>Mzansi Gig Network Controller</T></h2>
           <p className="text-sm text-slate-300 max-w-xl leading-relaxed">
-            Manage biometric vetting credentials, approve incoming Capitec deposits, review proof sheets, and seed verified local contractors instantly.
+            <T>Manage biometric vetting credentials, approve incoming Capitec deposits, review proof sheets, and seed verified local contractors instantly.</T>
           </p>
         </div>
       </div>
@@ -155,7 +149,7 @@ export function AdminDashboardView({
           <div className="absolute top-0 right-0 h-1.5 w-full bg-emerald-500" />
           <div className="flex justify-between items-start mb-3">
             <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">
-              Accumulated Revenue (Profit)
+              <T>Accumulated Revenue (Profit)</T>
             </span>
             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <Banknote size={16} />
@@ -167,7 +161,7 @@ export function AdminDashboardView({
             </h4>
             <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
               <TrendingUp size={12} className="text-emerald-500" />
-              Direct Capitec EFT and cash receipts net
+              <T>Direct Capitec EFT and cash receipts net</T>
             </p>
           </div>
         </div>
@@ -177,7 +171,7 @@ export function AdminDashboardView({
           <div className="absolute top-0 right-0 h-1.5 w-full bg-yellow-400" />
           <div className="flex justify-between items-start mb-3">
             <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">
-              Minted Coins Liquidity
+              <T>Minted Coins Liquidity</T>
             </span>
             <div className="w-8 h-8 rounded-lg bg-yellow-50 text-yellow-600 flex items-center justify-center">
               <Coins size={16} />
@@ -185,10 +179,10 @@ export function AdminDashboardView({
           </div>
           <div className="space-y-1">
             <h4 className="text-3xl font-black text-gray-950">
-              {totalCoinsApproved} Coins
+              <T>{totalCoinsApproved} Coins</T>
             </h4>
             <p className="text-[10px] font-bold text-slate-400">
-              Approved token volume supplied to handymen
+              <T>Approved token volume supplied to handymen</T>
             </p>
           </div>
         </div>
@@ -198,7 +192,7 @@ export function AdminDashboardView({
           <div className="absolute top-0 right-0 h-1.5 w-full bg-indigo-500" />
           <div className="flex justify-between items-start mb-3">
             <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">
-              Broadband Network Active
+              <T>Broadband Network Active</T>
             </span>
             <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
               <Users size={16} />
@@ -206,10 +200,10 @@ export function AdminDashboardView({
           </div>
           <div className="space-y-1">
             <h4 className="text-3xl font-black text-gray-950">
-              {activeUsersCount} Online
+              <T>{activeUsersCount} Online</T>
             </h4>
             <p className="text-[10px] font-bold text-slate-400">
-              Active verified candidate threads & online profiles
+              <T>Active verified candidate threads & online profiles</T>
             </p>
           </div>
         </div>
@@ -227,12 +221,12 @@ export function AdminDashboardView({
               <div>
                 <h3 className="font-black text-lg text-gray-950 flex items-center gap-2">
                   <Banknote size={20} className="text-emerald-600" />
-                  Receive & Review Payments
+                  <T>Receive & Review Payments</T>
                 </h3>
-                <p className="text-xs text-gray-500">Approve or reject Capitec proof of payments</p>
+                <p className="text-xs text-gray-500"><T>Approve or reject Capitec proof of payments</T></p>
               </div>
               <span className="bg-orange-50 text-orange-700 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
-                {pendingPayments.length} Pending
+                <T>{pendingPayments.length} Pending</T>
               </span>
             </div>
 
@@ -251,12 +245,12 @@ export function AdminDashboardView({
                       <div>
                         <div className="flex items-center gap-1.5">
                           <h4 className="font-extrabold text-sm text-gray-950">{pm.userName}</h4>
-                          <span className="bg-slate-100 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded text-gray-500">Ref: {pm.reference}</span>
+                          <span className="bg-slate-100 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded text-gray-500"><T>Ref</T>: <T>{pm.reference}</T></span>
                         </div>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          Applied package: <strong>{pm.coinsAmount} Coins</strong> (ZAR Price: R{pm.priceZAR.toFixed(2)})
+                          <T>Applied package</T>: <strong><T>{pm.coinsAmount} Coins</T></strong> (<T>ZAR Price</T>: <T>R{pm.priceZAR.toFixed(2)}</T>)
                         </p>
-                        <time className="text-[10px] text-gray-400 mt-1 block font-semibold">{pm.date}</time>
+                        <time className="text-[10px] text-gray-400 mt-1 block font-semibold"><T>{pm.date}</T></time>
                       </div>
                     </div>
 
@@ -266,7 +260,7 @@ export function AdminDashboardView({
                         className="flex-1 md:flex-none border border-red-200 hover:border-red-300 text-red-600 font-extrabold text-xs px-3 py-2 rounded-xl transition-all cursor-pointer hover:bg-red-50 active:scale-95"
                         type="button"
                       >
-                        Reject
+                        <T>Reject</T>
                       </button>
                       <button
                         onClick={() => onApprovePayment(pm.id)}
@@ -274,7 +268,7 @@ export function AdminDashboardView({
                         type="button"
                       >
                         <Check size={14} strokeWidth={3} />
-                        Approve Deposit
+                        <T>Approve Deposit</T>
                       </button>
                     </div>
 
@@ -284,8 +278,8 @@ export function AdminDashboardView({
             ) : (
               <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200 p-6 space-y-2">
                 <CheckCircle2 className="text-emerald-500 mx-auto" size={32} />
-                <p className="text-xs font-bold text-slate-800">All Deposit Slips Processed</p>
-                <p className="text-[10px] text-slate-400">No pending Capitec file transfers to verify at this stage.</p>
+                <p className="text-xs font-bold text-slate-800"><T>All Deposit Slips Processed</T></p>
+                <p className="text-[10px] text-slate-400"><T>No pending Capitec file transfers to verify at this stage.</T></p>
               </div>
             )}
           </div>
@@ -296,9 +290,9 @@ export function AdminDashboardView({
               <div>
                 <h3 className="font-black text-lg text-gray-950 flex items-center gap-2">
                   <Users size={20} className="text-indigo-600" />
-                  Active Users Registry ({filteredUsers.length})
+                  <T>Active Users Registry</T> (<T>{filteredUsers.length}</T>)
                 </h3>
-                <p className="text-xs text-gray-500">Track and manage balance sheets of vetted members</p>
+                <p className="text-xs text-gray-500"><T>Track and manage balance sheets of vetted members</T></p>
               </div>
 
               {/* Minimal filter search */}
@@ -306,7 +300,7 @@ export function AdminDashboardView({
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Filter name..."
+                  placeholder={translateText("Filter name...")}
                   value={searchUserQuery}
                   onChange={(e) => setSearchUserQuery(e.target.value)}
                   className="w-full bg-slate-50 text-xs py-2 pl-8 pr-3 rounded-lg outline-none border border-gray-200 focus:border-indigo-500 focus:bg-white"
@@ -330,10 +324,10 @@ export function AdminDashboardView({
                         <span className={`w-1.5 h-1.5 rounded-full ${user.online ? 'bg-green-500 animate-pulse' : 'bg-gray-350'}`} />
                       </div>
                       <p className="text-[11px] text-slate-400 mt-0.5 truncate flex items-center gap-1">
-                        <Briefcase size={10} /> {user.role}
+                        <Briefcase size={10} /> <T>{user.role}</T>
                       </p>
                       <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                        <MapPin size={10} /> {user.location}
+                        <MapPin size={10} /> <T>{user.location}</T>
                       </p>
                     </div>
                   </div>
@@ -341,7 +335,7 @@ export function AdminDashboardView({
                   <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center bg-white/70 px-2 py-1.5 rounded-xl">
                     <div className="flex items-center gap-1">
                       <Coins size={12} className="text-yellow-500" />
-                      <span className="text-xs font-black text-slate-800">{user.coins} Coins</span>
+                      <span className="text-xs font-black text-slate-800"><T>{user.coins} Coins</T></span>
                     </div>
                     <button
                       type="button"
@@ -353,7 +347,7 @@ export function AdminDashboardView({
                       }`}
                       title={user.lookingForJobs !== false ? "Toggle to 'Not looking'" : "Toggle to 'Looking for jobs'"}
                     >
-                      {user.lookingForJobs !== false ? '🔎 Core Candidate' : '💤 Secured/Passive'}
+                      {user.lookingForJobs !== false ? <T>🔎 Core Candidate</T> : <T>💤 Secured/Passive</T>}
                     </button>
                   </div>
                 </div>
@@ -364,17 +358,17 @@ export function AdminDashboardView({
           {/* Processed History Log */}
           {processedPayments.length > 0 && (
             <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-xs space-y-3">
-              <h4 className="font-bold text-xs uppercase tracking-widest text-slate-400">Archived Payment Audits</h4>
+              <h4 className="font-bold text-xs uppercase tracking-widest text-slate-400"><T>Archived Payment Audits</T></h4>
               <div className="divide-y divide-gray-50">
                 {processedPayments.map(p => (
                   <div key={p.id} className="py-2.5 flex justify-between items-center text-xs text-slate-600">
-                    <span className="font-medium">{p.userName} ref: "{p.reference}"</span>
+                    <span className="font-medium">{p.userName} <T>ref</T>: "<T>{p.reference}</T>"</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900">{p.coinsAmount} Coins</span>
+                      <span className="font-bold text-slate-900"><T>{p.coinsAmount} Coins</T></span>
                       <span className={`font-black text-[9px] uppercase px-2 py-0.5 rounded ${
                         p.status === 'approved' ? 'bg-green-55 bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {p.status}
+                        <T>{p.status}</T>
                       </span>
                     </div>
                   </div>
@@ -392,10 +386,10 @@ export function AdminDashboardView({
             <div>
               <h3 className="font-primary font-black text-lg text-slate-950 flex items-center gap-2">
                 <Image className="text-indigo-600" size={20} />
-                Portal Wallpaper
+                <T>Portal Wallpaper</T>
               </h3>
               <p className="text-xs text-gray-400 font-bold leading-relaxed mt-1">
-                Customize the global network background wallpaper. Upload an image from your device or select an elegant preset.
+                <T>Customize the global network background wallpaper. Upload an image from your device or select an elegant preset.</T>
               </p>
             </div>
 
@@ -409,7 +403,7 @@ export function AdminDashboardView({
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-xs p-2 flex justify-between items-center">
-                    <span className="text-[10px] text-white font-bold truncate max-w-[130px]">Active Custom Wallpaper</span>
+                    <span className="text-[10px] text-white font-bold truncate max-w-[130px]"><T>Active Custom Wallpaper</T></span>
                     <button
                       type="button"
                       onClick={() => {
@@ -427,8 +421,8 @@ export function AdminDashboardView({
               ) : (
                 <div className="border border-dashed border-gray-250 rounded-2xl p-5 text-center bg-gray-50/50 flex flex-col items-center justify-center min-h-[112px]">
                   <Image className="text-gray-450 mb-1" size={24} />
-                  <p className="text-[11px] font-bold text-gray-500">No custom background active</p>
-                  <p className="text-[10px] text-gray-450 mt-0.5">Using standard gradient backdrop</p>
+                  <p className="text-[11px] font-bold text-gray-500"><T>No custom background active</T></p>
+                  <p className="text-[10px] text-gray-450 mt-0.5"><T>Using standard gradient backdrop</T></p>
                 </div>
               )}
 
@@ -436,7 +430,7 @@ export function AdminDashboardView({
               <div className="relative">
                 <label className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 hover:border-indigo-500/50 bg-slate-50 hover:bg-slate-100/50 rounded-xl cursor-pointer text-xs font-extrabold text-gray-700 transition-all">
                   <Upload size={14} className="text-indigo-600" />
-                  <span>Upload Image File</span>
+                  <span><T>Upload Image File</T></span>
                   <input
                     type="file"
                     accept="image/*"
@@ -448,7 +442,7 @@ export function AdminDashboardView({
 
               {/* Presets */}
               <div className="space-y-2 pt-1">
-                <label className="text-[10px] font-black uppercase tracking-wider text-gray-400 block">Or Select a Preset Wallpaper</label>
+                <label className="text-[10px] font-black uppercase tracking-wider text-gray-400 block"><T>Or Select a Preset Wallpaper</T></label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { name: 'Jozi Skyline', url: 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?q=80&w=1200' },
@@ -467,7 +461,7 @@ export function AdminDashboardView({
                       className="group relative h-12 rounded-xl overflow-hidden text-left border border-gray-150 hover:border-indigo-500 cursor-pointer transition-all"
                     >
                       <img src={preset.url} alt={preset.name} className="w-full h-full object-cover brightness-75 group-hover:brightness-90 transition-all scroll-smooth" />
-                      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white text-center px-1 drop-shadow-md">{preset.name}</span>
+                      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white text-center px-1 drop-shadow-md"><T>{preset.name}</T></span>
                     </button>
                   ))}
                 </div>

@@ -20,7 +20,7 @@ import {
   ChevronRight,
   Lock,
 } from 'lucide-react';
-import { T } from './TranslationProvider';
+import { T, useLanguage } from './TranslationProvider';
 
 export interface UserProfile {
   id: string;
@@ -38,65 +38,6 @@ export interface UserProfile {
   coins?: number;
   lookingForJobs?: boolean;
 }
-
-const MOCK_USERS: UserProfile[] = [
-  {
-    id: '1',
-    name: 'John Doe',
-    avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=200&q=80',
-    role: 'Plumbing & Repairs Specialist',
-    location: 'Soweto, Johannesburg',
-    rating: 4.9,
-    completedJobs: 42,
-    hourlyRate: 'R150 - R200/hr',
-    bio: 'Dedicated master plumber with 8+ years experience solving emergency blockages, geyser installations, and general home pipeline refitting across Gauteng.',
-    skills: ['Geysers', 'Drainage', 'Leak Detection', 'Pipes'],
-    online: true,
-    verified: true
-  },
-  {
-    id: '2',
-    name: 'Nhlanhla Ndlovu',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80',
-    role: 'Interior Designer & Painter',
-    location: 'Green Point, Cape Town',
-    rating: 4.8,
-    completedJobs: 29,
-    hourlyRate: 'R220/hr',
-    bio: 'Experienced color consultant and interior wall designer specializing in premium textured coatings, residential paint-effects, and sanding.',
-    skills: ['Painting', 'Wallpapers', 'Sanding', 'Plastering'],
-    online: false,
-    verified: true
-  },
-  {
-    id: '3',
-    name: 'Tshepo Mokwena',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
-    role: 'Certified Electrician',
-    location: 'Sandton, Johannesburg',
-    rating: 4.95,
-    completedJobs: 56,
-    hourlyRate: 'R250/hr',
-    bio: 'High and low voltage commercial technician. Board certified for Eskom connection upgrades, single-phase wiring patterns, and inverter setups.',
-    skills: ['Inverters', 'Wiring', 'Distribution Boards', 'Solar'],
-    online: true,
-    verified: true
-  },
-  {
-    id: '4',
-    name: 'Aphiwe Cele',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80',
-    role: 'Home Organization & Cleaning Pro',
-    location: 'Umhlanga, Durban',
-    rating: 4.7,
-    completedJobs: 18,
-    hourlyRate: 'R110/hr',
-    bio: 'Professional organizer specializing in large-scale residential decluttering, post-move cleanups, and regular domestic maintenance.',
-    skills: ['Deep Cleaning', 'Organization', 'Laundry', 'Ironing'],
-    online: true,
-    verified: false
-  }
-];
 
 const CATEGORIES = [
   { id: 'electrical', name: 'Electrical & Solar', description: 'Certified single-phase & solar inverter technicians', icon: Zap, color: 'text-amber-500 bg-amber-50 border-amber-100' },
@@ -131,7 +72,8 @@ interface UsersViewProps {
   onSignUp?: () => void;
 }
 
-export function UsersView({ onStartChat, users = MOCK_USERS, isGuest, onSignUp }: UsersViewProps) {
+export function UsersView({ onStartChat, users = [], isGuest, onSignUp }: UsersViewProps) {
+  const { translateText } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showGuestPrompt, setShowGuestPrompt] = useState(false);
@@ -161,7 +103,7 @@ export function UsersView({ onStartChat, users = MOCK_USERS, isGuest, onSignUp }
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-600 transition-colors" size={20} />
             <input
               type="text"
-              placeholder="Search certified professionals, handymen, skills..."
+              placeholder={translateText("Search certified professionals, handymen, skills...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-gray-50 text-gray-950 rounded-2xl py-3.5 pl-11 pr-4 text-sm outline-none border border-gray-200/80 focus:border-green-600/70 focus:bg-white transition-all font-semibold shadow-xs"
@@ -179,7 +121,7 @@ export function UsersView({ onStartChat, users = MOCK_USERS, isGuest, onSignUp }
                 : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
             }`}
           >
-            All Categories
+            <T>All Categories</T>
           </button>
           {CATEGORIES.map((cat) => (
             <button
@@ -191,7 +133,7 @@ export function UsersView({ onStartChat, users = MOCK_USERS, isGuest, onSignUp }
                   : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
               }`}
             >
-              {cat.name}
+              <T>{cat.name}</T>
             </button>
           ))}
         </div>
@@ -200,11 +142,11 @@ export function UsersView({ onStartChat, users = MOCK_USERS, isGuest, onSignUp }
       {/* Network stats or info header */}
       <div className="flex justify-between items-center px-2">
         <p className="text-xs font-black uppercase text-gray-400 tracking-widest">
-          {filteredUsers.length} active vetted candidates found
+          {filteredUsers.length} <T>active vetted candidates found</T>
         </p>
         <div className="flex items-center gap-1.5 text-xs text-green-600 font-extrabold bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
           <ShieldCheck size={14} />
-          <span>Biometric Checked Vetting</span>
+          <span><T>Biometric Checked Vetting</T></span>
         </div>
       </div>
 
@@ -253,7 +195,7 @@ export function UsersView({ onStartChat, users = MOCK_USERS, isGuest, onSignUp }
 
         {filteredUsers.length === 0 && (
           <div className="text-center py-12 bg-white rounded-3xl border border-gray-200/80 p-8">
-            <p className="text-gray-500 font-bold">No certified professionals found matching filters.</p>
+            <p className="text-gray-500 font-bold"><T>No certified professionals found matching filters.</T></p>
             <button
               onClick={() => {
                 setSearchQuery('');
@@ -261,7 +203,7 @@ export function UsersView({ onStartChat, users = MOCK_USERS, isGuest, onSignUp }
               }}
               className="text-green-600 font-black text-xs underline mt-2 hover:opacity-80 block mx-auto"
             >
-              Reset Filters
+              <T>Reset Filters</T>
             </button>
           </div>
         )}
@@ -271,9 +213,9 @@ export function UsersView({ onStartChat, users = MOCK_USERS, isGuest, onSignUp }
       {showGuestPrompt && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Registration Required</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2"><T>Registration Required</T></h3>
             <p className="text-gray-600 text-sm mb-6">
-              You must register to contact professionals and view their contact details. 
+              <T>You must register to contact professionals and view their contact details.</T>
             </p>
             <div className="space-y-3">
                <button 
@@ -283,13 +225,13 @@ export function UsersView({ onStartChat, users = MOCK_USERS, isGuest, onSignUp }
                  }}
                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all"
                >
-                 Sign Up Now
+                 <T>Sign Up Now</T>
                </button>
                <button 
                  onClick={() => setShowGuestPrompt(false)}
                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition-colors"
                >
-                 Cancel
+                 <T>Cancel</T>
                </button>
             </div>
           </div>
@@ -383,7 +325,7 @@ function UserCard({ user, onStartChat, isGuest }: { user: UserProfile, onStartCh
         {isGuest ? (
           <div className="mt-1 p-1.5 bg-gray-50 border border-dashed border-gray-200 rounded-lg flex items-center justify-center gap-1.5 text-gray-400">
             <Lock size={12} />
-            <span className="text-[10px] font-bold">Contact Locked</span>
+            <span className="text-[10px] font-bold"><T>Contact Locked</T></span>
           </div>
         ) : (
           <button
@@ -392,7 +334,7 @@ function UserCard({ user, onStartChat, isGuest }: { user: UserProfile, onStartCh
             className="w-full bg-gray-900 hover:bg-green-600 text-white font-extrabold py-1.5 rounded-lg text-xs transition-colors shadow-xs cursor-pointer active:scale-95 shrink-0 mt-1 flex items-center justify-center gap-1.5"
           >
             <MessageSquare size={13} />
-            <span>Hire Pro</span>
+            <span><T>Hire Pro</T></span>
           </button>
         )}
       </div>

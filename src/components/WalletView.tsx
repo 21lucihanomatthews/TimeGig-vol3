@@ -16,6 +16,7 @@ import {
   CheckCircle2, 
   X
 } from 'lucide-react';
+import { T } from './TranslationProvider';
 
 interface WalletViewProps {
   coins: number;
@@ -139,14 +140,14 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
           <div className="space-y-2">
             <span className="text-xs font-black tracking-widest text-emerald-400 uppercase flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Verified Secure Wallet
+              <T>Verified Secure Wallet</T>
             </span>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl md:text-5xl font-black tracking-tight">{coins}</span>
-              <span className="text-lg font-bold text-gray-300">South African Coins (ZAR)</span>
+              <span className="text-lg font-bold text-gray-300"><T>South African Coins (ZAR)</T></span>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed max-w-md">
-              Apply to jobs and buy corporate tenders instantly in Mzansi. Get 100% money back if your bids or job applications are unsuccessful.
+              <T>Apply to jobs and buy corporate tenders instantly in Mzansi. Get 100% money back if your bids or job applications are unsuccessful.</T>
             </p>
           </div>
 
@@ -155,7 +156,7 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
             className="w-full md:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-extrabold text-sm px-6 py-4 rounded-2xl shadow-lg hover:shadow-emerald-900/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer"
           >
             <PlusCircle size={18} />
-            Top Up Coins Balance
+            <T>Top Up Coins Balance</T>
           </button>
         </div>
 
@@ -163,11 +164,11 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
         <div className="mt-6 pt-6 border-t border-white/5 flex flex-wrap gap-4 text-xs text-gray-400">
           <div className="flex items-center gap-1.5">
             <ShieldCheck size={14} className="text-emerald-400" />
-            Capitec Bank Certified
+            <T>Capitec Bank Certified</T>
           </div>
           <div className="flex items-center gap-1.5">
             <Clock size={14} className="text-yellow-400" />
-            24h verification turn-around
+            <T>24h verification turn-around</T>
           </div>
         </div>
       </div>
@@ -177,10 +178,10 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
         <div className="flex justify-between items-center pb-2 border-b border-gray-100">
           <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
             <Wallet size={18} className="text-indigo-600" />
-            Transaction History
+            <T>Transaction History</T>
           </h3>
           <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
-            Local Device Cache
+            <T>Local Device Cache</T>
           </span>
         </div>
 
@@ -196,9 +197,9 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                   {tx.type === 'deposit' ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-gray-900">{tx.description}</h4>
+                  <h4 className="font-bold text-sm text-gray-900"><T>{tx.description}</T></h4>
                   <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                    <Clock size={12} /> {tx.date}
+                    <Clock size={12} /> <T>{tx.date}</T>
                   </p>
                 </div>
               </div>
@@ -210,7 +211,7 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                   {tx.type === 'deposit' ? '+' : '-'}{tx.amount}
                 </span>
                 <span className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md mt-1 inline-block">
-                  {tx.status}
+                  <T>{tx.status}</T>
                 </span>
               </div>
             </div>
@@ -228,8 +229,8 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
               <div className="flex items-center gap-2">
                 <Coins className="text-yellow-500 animate-bounce" size={22} />
                 <div>
-                  <h3 className="font-extrabold text-lg text-gray-900">Buy Coins Wallet Refills</h3>
-                  <p className="text-xs text-gray-500">Pick a secure Rand package below & continue to payment</p>
+                  <h3 className="font-extrabold text-lg text-gray-900"><T>Buy Coins Wallet Refills</T></h3>
+                  <p className="text-xs text-gray-500"><T>Pick a secure Rand package below & continue to payment</T></p>
                 </div>
               </div>
               <button 
@@ -248,7 +249,7 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                 {/* Step 1: Select Package */}
                 <div className="space-y-3">
                   <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase block">
-                    Step 1: Choose Your Pack
+                    <T>Step 1: Choose Your Pack</T>
                   </span>
                   
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -270,10 +271,10 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                               <Check size={10} strokeWidth={4} />
                             </span>
                           )}
-                          <div className="text-lg font-black tracking-tight">{pkg.coins} Coins</div>
-                          <div className="text-emerald-700 font-extrabold text-xs mt-1">{pkg.price}</div>
+                          <div className="text-lg font-black tracking-tight"><T>{pkg.coins} Coins</T></div>
+                          <div className="text-emerald-700 font-extrabold text-xs mt-1"><T>{pkg.price}</T></div>
                           <div className="text-[10px] font-semibold text-gray-400 mt-2 flex items-center gap-1">
-                            <Clock size={10} /> Exp: {pkg.expiry}
+                            <Clock size={10} /> <T>Exp</T>: <T>{pkg.expiry}</T>
                           </div>
                         </button>
                       );
@@ -286,7 +287,7 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                   <div className="space-y-4 animate-in fade-in duration-300">
                     <div>
                       <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase block mb-3">
-                        Step 2: Choose Payment Gateway
+                        <T>Step 2: Choose Payment Gateway</T>
                       </span>
                       
                       <div className="grid grid-cols-2 gap-3">
@@ -303,20 +304,20 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                         >
                           <CreditCard className={paymentMethod === 'bank' ? 'text-emerald-600' : 'text-gray-400'} size={24} />
                           <div>
-                            <div className="font-bold text-sm">Capitec Bank EFT</div>
-                            <div className="text-[10px] text-gray-400 font-semibold">Immediate POP Upload</div>
+                            <div className="font-bold text-sm"><T>Capitec Bank EFT</T></div>
+                            <div className="text-[10px] text-gray-400 font-semibold"><T>Immediate POP Upload</T></div>
                           </div>
                         </button>
 
                         {/* Paystack */}
                         <div className="relative border border-dashed border-gray-200 rounded-2xl p-4 flex flex-col items-center gap-2 text-center bg-gray-50/50 cursor-not-allowed opacity-70">
                           <span className="absolute -top-2.5 bg-yellow-400 text-yellow-950 px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wider uppercase border border-white">
-                            In Process
+                            <T>In Process</T>
                           </span>
                           <CreditCard className="text-gray-300" size={24} />
                           <div>
-                            <div className="font-bold text-sm text-gray-400">Paystack Card Pay</div>
-                            <div className="text-[10px] text-gray-400 font-semibold">Integration pending approval</div>
+                            <div className="font-bold text-sm text-gray-400"><T>Paystack Card Pay</T></div>
+                            <div className="text-[10px] text-gray-400 font-semibold"><T>Integration pending approval</T></div>
                           </div>
                         </div>
 
@@ -331,8 +332,8 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                             C
                           </div>
                           <div>
-                            <h4 className="font-extrabold text-sm text-slate-800">Direct Deposit Instructions</h4>
-                            <p className="text-[10px] font-semibold text-gray-500">Cape Town & Johannesburg Branch</p>
+                            <h4 className="font-extrabold text-sm text-slate-800"><T>Direct Deposit Instructions</T></h4>
+                            <p className="text-[10px] font-semibold text-gray-500"><T>Cape Town & Johannesburg Branch</T></p>
                           </div>
                         </div>
 
@@ -340,8 +341,8 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs text-slate-700 font-medium">
                           <div className="bg-white border rounded-xl p-3 flex justify-between items-center gap-2">
                             <div>
-                              <span className="text-[9px] font-bold text-slate-400 block uppercase">Bank Name</span>
-                              <strong className="text-slate-800 font-extrabold text-sm">Capitec</strong>
+                              <span className="text-[9px] font-bold text-slate-400 block uppercase"><T>Bank Name</T></span>
+                              <strong className="text-slate-800 font-extrabold text-sm"><T>Capitec</T></strong>
                             </div>
                             <button
                               type="button"
@@ -354,7 +355,7 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
 
                           <div className="bg-white border rounded-xl p-3 flex justify-between items-center gap-2">
                             <div>
-                              <span className="text-[9px] font-bold text-slate-400 block uppercase">Account Number</span>
+                              <span className="text-[9px] font-bold text-slate-400 block uppercase"><T>Account Number</T></span>
                               <strong className="text-slate-800 font-extrabold text-sm">1334067366</strong>
                             </div>
                             <button
@@ -368,8 +369,8 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
 
                           <div className="bg-white border rounded-xl p-3 flex justify-between items-center gap-2 col-span-1">
                             <div>
-                              <span className="text-[9px] font-bold text-slate-400 block uppercase">Account Holder</span>
-                              <strong className="text-slate-800 font-extrabold text-sm">Matthews</strong>
+                              <span className="text-[9px] font-bold text-slate-400 block uppercase"><T>Account Holder</T></span>
+                              <strong className="text-slate-800 font-extrabold text-sm"><T>Matthews</T></strong>
                             </div>
                             <button
                               type="button"
@@ -382,8 +383,8 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
 
                           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex justify-between items-center gap-2 col-span-1">
                             <div>
-                              <span className="text-[9px] font-bold text-yellow-700 block uppercase">Required Reference</span>
-                              <strong className="text-yellow-900 font-extrabold text-sm">{selectedPackage.coins} coins</strong>
+                              <span className="text-[9px] font-bold text-yellow-700 block uppercase"><T>Required Reference</T></span>
+                              <strong className="text-yellow-900 font-extrabold text-sm"><T>{selectedPackage.coins} coins</T></strong>
                             </div>
                             <button
                               type="button"
@@ -399,7 +400,7 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                         <form onSubmit={handleSubmitProof} className="space-y-4 pt-2">
                           <div className="space-y-2">
                             <label className="text-xs font-bold text-slate-800 block">
-                              Upload Proof of Payment (PoP)
+                              <T>Upload Proof of Payment (PoP)</T>
                             </label>
                             
                             <div className="border-2 border-dashed border-gray-200 bg-white rounded-2xl p-4 text-center hover:bg-slate-50/50 transition-colors relative cursor-pointer group">
@@ -420,16 +421,16 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                                   )}
                                   <div>
                                     <p className="text-xs font-bold text-slate-800 line-clamp-1">{popFile.name}</p>
-                                    <p className="text-[10px] text-gray-400 font-semibold">{(popFile.size / 1024).toFixed(1)} KB — Tap to replace</p>
+                                    <p className="text-[10px] text-gray-400 font-semibold">{(popFile.size / 1024).toFixed(1)} KB — <T>Tap to replace</T></p>
                                   </div>
                                 </div>
                               ) : (
                                 <div className="space-y-1.5 py-4">
                                   <Upload className="text-gray-400 mx-auto group-hover:scale-110 transition-transform" size={28} />
                                   <div className="text-xs">
-                                    <span className="font-bold text-indigo-600">Choose a receipt file</span> or drag & drop here
+                                    <T>Choose a receipt file or drag & drop here</T>
                                   </div>
-                                  <p className="text-[10px] text-gray-400 font-medium">JPEG, PNG or PDF (Max 10MB)</p>
+                                  <p className="text-[10px] text-gray-400 font-medium">JPEG, PNG <T>or</T> PDF (<T>Max 10MB</T>)</p>
                                 </div>
                               )}
                             </div>
@@ -443,12 +444,12 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                             {isSubmitting ? (
                               <>
                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                Uploading Receipt & Validating...
+                                <T>Uploading Receipt & Validating...</T>
                               </>
                             ) : (
                               <>
                                 <CheckCircle2 size={16} />
-                                Submit Proof of Payment
+                                <T>Submit Proof of Payment</T>
                               </>
                             )}
                           </button>
@@ -466,12 +467,12 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                 </div>
                 
                 <div className="space-y-2">
-                  <h4 className="text-xl font-extrabold text-gray-900">Proof Submitted Successfully!</h4>
+                  <h4 className="text-xl font-extrabold text-gray-900"><T>Proof Submitted Successfully!</T></h4>
                   <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
-                     Your Capitec bank transfer receipt for <strong className="text-slate-800">{selectedPackage?.coins} Coins refill (${selectedPackage?.price})</strong> with reference <strong className="text-slate-800">"{selectedPackage?.coins} coins"</strong> is queued for admin review.
+                     <T>Your Capitec bank transfer receipt for</T> <strong className="text-slate-800"><T>{selectedPackage?.coins}</T> <T>Coins refill</T> (<T>{selectedPackage?.price}</T>)</strong> <T>with reference</T> <strong className="text-slate-800">"<T>{selectedPackage?.coins} coins</T>"</strong> <T>is queued for admin review.</T>
                   </p>
                   <div className="bg-emerald-50 text-emerald-800 p-4 rounded-2xl text-xs font-bold border border-emerald-200/50 max-w-md mx-auto mt-4 leading-normal">
-                    💡 <strong>Test Drive Admin Flow:</strong> To approve or reject this payment immediately, click **More (or your avatar photo) ➔ Admin Panel** in the top menu bar! You can see full accounting statistics there.
+                    💡 <strong><T>Test Drive Admin Flow:</T></strong> <T>To approve or reject this payment immediately, click **More (or your avatar photo) ➔ Admin Panel** in the top menu bar! You can see full accounting statistics there.</T>
                   </div>
                 </div>
 
@@ -481,7 +482,7 @@ export function WalletView({ coins, setCoins, transactions, onAddTransaction }: 
                     onClick={resetModalState}
                     className="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl transition-all px-6 text-sm"
                   >
-                    Got it, Thank You
+                    <T>Got it, Thank You</T>
                   </button>
                 </div>
               </div>

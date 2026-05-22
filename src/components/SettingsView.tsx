@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Settings, BellOff, Bell, UserCheck, UserX, Info, Globe, Languages } from 'lucide-react';
-import { T, useLanguage } from './TranslationProvider';
+import { T, useLanguage, translateOffline } from './TranslationProvider';
 
 interface SettingsViewProps {
   coins?: number;
@@ -52,8 +52,8 @@ export function SettingsView({
     localStorage.setItem('timegig_offline_notifications', String(checked));
     triggerToast(
       checked
-        ? "Offline notifications enabled! You will receive updates of new projects and payments when disconnected."
-        : "Offline notifications disabled."
+        ? translateOffline("Offline notifications enabled! You will receive updates of new projects and payments when disconnected.", "Afrikaans")
+        : translateOffline("Offline notifications disabled.", "Afrikaans")
     );
   };
 
@@ -68,8 +68,8 @@ export function SettingsView({
     
     triggerToast(
       nextStatus === 'active'
-        ? "Your account has been enabled. Your profile is now visible."
-        : "Your account is now disabled. It will be hidden from searches & public listings."
+        ? translateOffline("Your account has been enabled. Your profile is now visible.", "Afrikaans")
+        : translateOffline("Your account is now disabled. It will be hidden from searches & public listings.", "Afrikaans")
     );
   };
 
@@ -77,7 +77,7 @@ export function SettingsView({
     if (!targetLang || !targetLang.trim()) return;
     const formattedLang = targetLang.trim().substring(0, 40);
     setLanguage(formattedLang);
-    triggerToast(`Translating application to ${formattedLang} immediately...`);
+    triggerToast(translateOffline(`Translating application to ${formattedLang} immediately...`, "Afrikaans"));
   };
 
   const presetLanguages = [
@@ -163,13 +163,15 @@ export function SettingsView({
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                   <Globe size={14} />
                 </span>
-                <input
-                  type="text"
-                  value={customLanguage}
-                  onChange={(e) => setCustomLanguage(e.target.value)}
-                  placeholder="e.g. Japanese, Korean, Italian, Tshivenda, Xitsonga..."
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 pl-9 pr-3 text-xs text-gray-900 placeholder-gray-450 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-semibold"
-                />
+                <T>
+                  <input
+                    type="text"
+                    value={customLanguage}
+                    onChange={(e) => setCustomLanguage(e.target.value)}
+                    placeholder="e.g. Japanese, Korean, Italian, Tshivenda, Xitsonga..."
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 pl-9 pr-3 text-xs text-gray-900 placeholder-gray-450 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-semibold"
+                  />
+                </T>
               </div>
               <button
                 type="submit"

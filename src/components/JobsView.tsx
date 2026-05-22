@@ -9,12 +9,11 @@ interface JobsViewProps {
   onApply: (job: Job) => void;
   appliedJobIds: string[];
   onAddJob?: (job: Job) => void;
-  onLoadSamples?: () => void;
   isGuest?: boolean;
   onSignUp?: () => void;
 }
 
-export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoadSamples, isGuest, onSignUp }: JobsViewProps) {
+export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, isGuest, onSignUp }: JobsViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedLocation, setSelectedLocation] = useState('All');
@@ -146,13 +145,15 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
         <div className="flex flex-col md:flex-row gap-3">
           <div className="relative flex-grow">
             <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input
-              type="text"
-              placeholder="Search roles, skills or companies..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-gray-50 text-gray-900 pl-11 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 focus:bg-white transition-colors"
-            />
+            <T>
+              <input
+                type="text"
+                placeholder="Search roles, skills or companies..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-gray-50 text-gray-900 pl-11 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 focus:bg-white transition-colors"
+              />
+            </T>
           </div>
           <div className="flex gap-2">
             <select
@@ -161,7 +162,7 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
               className="bg-gray-50 px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 outline-none text-gray-700 font-medium"
             >
               {locations.map(loc => (
-                <option key={loc} value={loc}>{loc === 'All' ? 'Everywhere' : loc}</option>
+                <option key={loc} value={loc}>{loc === 'All' ? <T noSpan>Everywhere</T> : <T noSpan>{loc}</T>}</option>
               ))}
             </select>
           </div>
@@ -193,7 +194,7 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
             <div className="space-y-1">
               <h4 className="text-lg font-bold text-gray-800"><T>No active job vacancies listed</T></h4>
               <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
-                <T>Start by posting a corporate job opportunity, full-time search vacancy, or import South African sample configurations instantly.</T>
+                <T>Start by posting a corporate job opportunity or full-time search vacancy to find specialists.</T>
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 justify-center items-center pt-2">
@@ -205,15 +206,6 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
                 >
                   <PlusCircle size={14} />
                   <T>Post a Job Opportunity</T>
-                </button>
-              )}
-              {onLoadSamples && (
-                <button
-                  type="button"
-                  onClick={onLoadSamples}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all border border-gray-200"
-                >
-                  <T>Load Sample Job Listings</T>
                 </button>
               )}
             </div>
@@ -256,13 +248,13 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
                   {isGuest ? (
                     <div className="bg-gray-100 text-gray-400 px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-dashed border-gray-200">
                       <Lock size={14} />
-                      Apply Locked
+                      <T>Apply Locked</T>
                     </div>
                   ) : (
                     <button
                       className="bg-green-600 text-white hover:bg-green-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-xs flex items-center justify-center gap-1.5"
                     >
-                      View & Apply
+                      <T>View & Apply</T>
                       <ChevronRight size={16} />
                     </button>
                   )}
@@ -289,11 +281,11 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
 
             {/* Header */}
             <div className="p-6 pb-4 border-b border-gray-100 bg-gray-50 pt-10">
-              <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">{selectedJob.category}</span>
-              <h3 className="text-2xl font-black text-gray-900 mt-3 tracking-tight">{selectedJob.title}</h3>
+              <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full"><T>{selectedJob.category}</T></span>
+              <h3 className="text-2xl font-black text-gray-900 mt-3 tracking-tight"><T>{selectedJob.title}</T></h3>
               <p className="text-sm font-semibold text-gray-600 mt-1 flex items-center gap-2">
                 <Briefcase size={16} className="text-gray-400" />
-                {selectedJob.company}
+                <T>{selectedJob.company}</T>
               </p>
             </div>
 
@@ -301,48 +293,48 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
             <div className="p-6 max-h-[60vh] overflow-y-auto space-y-6">
               <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <span className="text-xs text-gray-500 block mb-1 flex items-center gap-1"><Coins size={14}/> Salary / Rate</span>
-                    <span className="font-bold text-emerald-600 text-lg">{selectedJob.rate}</span>
+                    <span className="text-xs text-gray-500 block mb-1 flex items-center gap-1"><Coins size={14}/> <T>Salary / Rate</T></span>
+                    <span className="font-bold text-emerald-600 text-lg"><T>{selectedJob.rate}</T></span>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <span className="text-xs text-gray-500 block mb-1 flex items-center gap-1"><MapPin size={14}/> Location</span>
-                    <span className="font-bold text-gray-700">{selectedJob.location}</span>
+                    <span className="text-xs text-gray-500 block mb-1 flex items-center gap-1"><MapPin size={14}/> <T>Location</T></span>
+                    <span className="font-bold text-gray-700"><T>{selectedJob.location}</T></span>
                   </div>
               </div>
 
               <div>
-                <h5 className="text-sm font-bold text-gray-800 mb-2">Job Description</h5>
-                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{selectedJob.description}</p>
+                <h5 className="text-sm font-bold text-gray-800 mb-2"><T>Job Description</T></h5>
+                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line"><T>{selectedJob.description}</T></p>
               </div>
 
               {isApplying ? (
                  <div className="pt-4 border-t border-gray-100 text-center space-y-3 py-4">
                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                   <h4 className="text-md font-bold text-gray-900">Redirecting...</h4>
-                   <p className="text-xs text-gray-500">Taking you to {selectedJob.company}'s site to apply.</p>
+                   <h4 className="text-md font-bold text-gray-900"><T>Redirecting...</T></h4>
+                   <p className="text-xs text-gray-500"><T>Taking you to {selectedJob.company}'s site to apply.</T></p>
                  </div>
               ) : applySuccess ? (
                 <div className="pt-4 border-t border-gray-100 text-center space-y-3 py-4">
                   <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600">
                     <CheckCircle size={32} />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-900">Application Link Opened!</h4>
+                  <h4 className="text-lg font-bold text-gray-900"><T>Application Link Opened!</T></h4>
                   <p className="text-xs text-gray-500 max-w-xs mx-auto">
-                    You can complete your application on the external site. Good luck!
+                    <T>You can complete your application on the external site. Good luck!</T>
                   </p>
                   <button
                     onClick={() => setSelectedJob(null)}
                     className="mt-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-5 py-2 rounded-xl text-xs transition-colors"
                   >
-                    Close
+                    <T>Close</T>
                   </button>
                 </div>
               ) : isGuest ? (
                 <div className="pt-4 border-t border-gray-100 text-center space-y-4 py-4">
                    <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl space-y-2">
                      <Lock className="mx-auto text-indigo-500" size={24} />
-                     <h4 className="text-sm font-extrabold text-indigo-900 uppercase">Apply Feature Locked</h4>
-                     <p className="text-[11px] text-indigo-700 font-medium">To apply for this role and access the hire portal, you must register your personal profile first.</p>
+                     <h4 className="text-sm font-extrabold text-indigo-900 uppercase"><T>Apply Feature Locked</T></h4>
+                     <p className="text-[11px] text-indigo-700 font-medium"><T>To apply for this role and access the hire portal, you must register your personal profile first.</T></p>
                    </div>
                    <button
                     onClick={() => {
@@ -351,7 +343,7 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
                     }}
                     className="w-full py-4 rounded-xl font-bold text-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-md"
                   >
-                    Sign Up to Apply
+                    <T>Sign Up to Apply</T>
                   </button>
                 </div>
               ) : (
@@ -360,10 +352,10 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
                     onClick={handleApplySubmit}
                     className="w-full py-4 rounded-xl font-bold text-lg tracking-tight text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-100 transition-all flex items-center justify-center gap-2 shadow-lg"
                   >
-                    View Details & Apply
+                    <T>View Details & Apply</T>
                     <ChevronRight size={20} />
                   </button>
-                  <p className="text-center text-xs text-gray-400 mt-3">You will be redirected to an external site.</p>
+                  <p className="text-center text-xs text-gray-400 mt-3"><T>You will be redirected to an external site.</T></p>
                 </div>
               )}
             </div>
@@ -376,7 +368,7 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative">
             <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-900">Post a Job Opportunity</h3>
+              <h3 className="font-bold text-lg text-gray-900"><T>Post a Job Opportunity</T></h3>
               <button 
                 type="button"
                 onClick={() => setShowCreateModal(false)} 
@@ -387,55 +379,65 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
             </div>
             <form onSubmit={handleCreateJobSubmit} className="p-5 space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-600 block mb-1">Job Title</label>
-                <input required type="text" value={newJobState.title} onChange={e => setNewJobState({...newJobState, title: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. Senior Frontend Engineer" />
+                <label className="text-xs font-bold text-gray-600 block mb-1"><T>Job Title</T></label>
+                <T>
+                  <input required type="text" value={newJobState.title} onChange={e => setNewJobState({...newJobState, title: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. Senior Frontend Engineer" />
+                </T>
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 block mb-1">Company / Organization</label>
-                <input required type="text" value={newJobState.company} onChange={e => setNewJobState({...newJobState, company: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. Vodacom South Africa" />
+                <label className="text-xs font-bold text-gray-600 block mb-1"><T>Company / Organization</T></label>
+                <T>
+                  <input required type="text" value={newJobState.company} onChange={e => setNewJobState({...newJobState, company: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. Vodacom South Africa" />
+                </T>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">Job Category</label>
+                  <label className="text-xs font-bold text-gray-600 block mb-1"><T>Job Category</T></label>
                   <select value={newJobState.category} onChange={e => setNewJobState({...newJobState, category: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500">
-                    <option value="Technology">Technology</option>
-                    <option value="Construction">Construction</option>
-                    <option value="Creative">Creative</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Logistics">Logistics</option>
-                    <option value="Services">Services</option>
+                    <option value="Technology"><T noSpan>Technology</T></option>
+                    <option value="Construction"><T noSpan>Construction</T></option>
+                    <option value="Creative"><T noSpan>Creative</T></option>
+                    <option value="Finance"><T noSpan>Finance</T></option>
+                    <option value="Logistics"><T noSpan>Logistics</T></option>
+                    <option value="Services"><T noSpan>Services</T></option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">Job Type</label>
+                  <label className="text-xs font-bold text-gray-600 block mb-1"><T>Job Type</T></label>
                   <select value={newJobState.type} onChange={e => setNewJobState({...newJobState, type: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500">
-                    <option value="Full-time">Full-time</option>
-                    <option value="Part-time">Part-time</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Remote">Remote</option>
+                    <option value="Full-time"><T noSpan>Full-time</T></option>
+                    <option value="Part-time"><T noSpan>Part-time</T></option>
+                    <option value="Contract"><T noSpan>Contract</T></option>
+                    <option value="Remote"><T noSpan>Remote</T></option>
                   </select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">Salary / Remuneration (Rand)</label>
-                  <input required type="text" value={newJobState.rate} onChange={e => setNewJobState({...newJobState, rate: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. R45 000 / month" />
+                  <label className="text-xs font-bold text-gray-600 block mb-1"><T>Salary / Remuneration (Rand)</T></label>
+                  <T>
+                    <input required type="text" value={newJobState.rate} onChange={e => setNewJobState({...newJobState, rate: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. R45 000 / month" />
+                  </T>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">Location / City</label>
-                  <input required type="text" value={newJobState.location} onChange={e => setNewJobState({...newJobState, location: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. Sandton, JHB" />
+                  <label className="text-xs font-bold text-gray-600 block mb-1"><T>Location / City</T></label>
+                  <T>
+                    <input required type="text" value={newJobState.location} onChange={e => setNewJobState({...newJobState, location: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="e.g. Sandton, JHB" />
+                  </T>
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 block mb-1">Description & Requirements</label>
-                <textarea required rows={4} value={newJobState.description} onChange={e => setNewJobState({...newJobState, description: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="State keys skills, duties and qualification parameters..." />
+                <label className="text-xs font-bold text-gray-600 block mb-1"><T>Description & Requirements</T></label>
+                <T>
+                  <textarea required rows={4} value={newJobState.description} onChange={e => setNewJobState({...newJobState, description: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder="State keys skills, duties and qualification parameters..." />
+                </T>
               </div>
               <button
                 type="submit"
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 rounded-xl transition-all shadow-md mt-2 flex justify-center items-center gap-1.5 cursor-pointer"
               >
                 <PlusCircle size={16} />
-                Activate Job Listing
+                <T>Activate Job Listing</T>
               </button>
             </form>
           </div>
@@ -446,9 +448,9 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
       {showGuestPrompt && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">View-Only Mode</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2"><T>View-Only Mode</T></h3>
             <p className="text-gray-600 text-sm mb-6">
-              You must register as a member to apply for jobs or view contact details. 
+              <T>You must register as a member to apply for jobs or view contact details.</T>
             </p>
             <div className="space-y-3">
                <button 
@@ -458,13 +460,13 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
                  }}
                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all"
                >
-                 Sign Up Now
+                 <T>Sign Up Now</T>
                </button>
                <button 
                  onClick={() => setShowGuestPrompt(false)}
                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition-colors"
                >
-                 Cancel
+                 <T>Cancel</T>
                </button>
             </div>
           </div>

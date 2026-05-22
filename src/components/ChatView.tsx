@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, MoreVertical, Phone, Video, Send, Smile, Paperclip, ArrowLeft, Check, CheckCheck, MessageSquare, Image as ImageIcon } from 'lucide-react';
 import { GalleryItem } from '../types';
 
+import { T, useLanguage } from './TranslationProvider';
+
 interface ChatMessage {
   id: string;
   text?: string;
@@ -55,6 +57,7 @@ const MOCK_MESSAGES: Record<string, ChatMessage[]> = {
 };
 
 export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, onSelectContact, isGuest, onSignUp }: ChatViewProps) {
+  const { translateText } = useLanguage();
   const [selectedContactId, setSelectedContactId] = useState<string | null>(initialContactId || null);
 
   useEffect(() => {
@@ -70,22 +73,22 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
           <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <MessageSquare size={32} />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">Sign in to Message</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-3"><T>Sign in to Message</T></h3>
           <p className="text-gray-600 text-sm mb-8">
-            You must register as a member to communicate with other users, send media, and track messages.
+            <T>You must register as a member to communicate with other users, send media, and track messages.</T>
           </p>
           <div className="space-y-3">
              <button 
                onClick={onSignUp}
                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl transition-all shadow-md"
              >
-               Sign Up Now
+               <T>Sign Up Now</T>
              </button>
              <button 
                onClick={onCloseChat}
                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-4 rounded-xl transition-colors"
              >
-               Go Back
+               <T>Go Back</T>
              </button>
           </div>
         </div>
@@ -206,7 +209,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
             <button onClick={onCloseChat} className="text-gray-500 hover:text-green-600 transition-colors p-2 rounded-full hover:bg-gray-100 cursor-pointer">
               <ArrowLeft size={20} />
             </button>
-            <h2 className="text-xl font-extrabold tracking-tight text-gray-900">Messages</h2>
+            <h2 className="text-xl font-extrabold tracking-tight text-gray-900"><T>Messages</T></h2>
           </div>
           <button className="text-gray-500 hover:text-green-600 transition-colors p-1.5 rounded-full hover:bg-gray-100 cursor-pointer">
             <MoreVertical size={20} />
@@ -219,7 +222,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-600 transition-colors" size={18} />
             <input 
               type="text" 
-              placeholder="Search chats..." 
+              placeholder={translateText("Search chats...")} 
               className="w-full bg-white text-gray-900 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none border border-gray-200/80 focus:border-green-600 focus:bg-white transition-all font-semibold shadow-xs"
             />
           </div>
@@ -270,8 +273,8 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
             <div className="w-20 h-20 bg-green-50 border border-green-200/60 rounded-2xl flex items-center justify-center mx-auto mb-5 text-green-600 shadow-xs">
               <MessageSquare size={36} />
             </div>
-            <h2 className="text-2xl font-black text-gray-900 mb-2">TimeGig Chat</h2>
-            <p className="text-gray-500 text-sm leading-relaxed font-medium">Connect and collaborate safely with candidates. Select a thread on the left to start messaging.</p>
+            <h2 className="text-2xl font-black text-gray-900 mb-2"><T>TimeGig Chat</T></h2>
+            <p className="text-gray-500 text-sm leading-relaxed font-medium"><T>Connect and collaborate safely with candidates. Select a thread on the left to start messaging.</T></p>
           </div>
         ) : (
           <>
@@ -292,7 +295,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-950 text-[15px] leading-tight">{selectedContact?.name}</h3>
-                  <p className="text-[10px] font-bold text-green-600">{selectedContact?.online ? 'Online' : 'Offline'}</p>
+                  <p className="text-[10px] font-bold text-green-600">{selectedContact?.online ? <T>Online</T> : <T>Offline</T>}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-gray-500">
@@ -307,7 +310,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
             <div className="flex-grow overflow-y-auto p-4 space-y-4 z-10 flex flex-col no-scrollbar">
               <div className="flex justify-center mb-6 sticky top-2 z-20">
                 <span className="bg-white/95 border border-gray-200/80 text-gray-600 text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-xs">
-                  Today
+                  <T>Today</T>
                 </span>
               </div>
               
@@ -392,7 +395,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
                     type="text"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Type a message..."
+                    placeholder={translateText("Type a message...")}
                     className="w-full bg-transparent outline-none border-none text-gray-900 text-sm placeholder-gray-400 font-medium"
                   />
                 </form>

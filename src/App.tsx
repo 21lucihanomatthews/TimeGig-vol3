@@ -27,15 +27,10 @@ import {
   LogOut,
   Check,
 } from "lucide-react";
+import { supabase } from "./lib/supabaseClient";
 import {
-  dummyJobs,
-  dummyTenders,
   initialGigs,
   initialGalleryItems,
-  sampleJobs,
-  sampleTenders,
-  sampleGigs,
-  sampleGalleryItems,
 } from "./data";
 import { Job, Tender, Gig, GalleryItem } from "./types";
 import { JobsView } from "./components/JobsView";
@@ -96,15 +91,7 @@ export default function App() {
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
   const [notifications, setNotifications] = useState<
     { id: string; title: string; message: string; read: boolean; tab: string }[]
-  >([
-    {
-      id: "1",
-      title: "Welcome to TimeGig!",
-      message: "Setup your profile to get started.",
-      read: false,
-      tab: "profile",
-    },
-  ]);
+  >([]);
 
   // Sync account active status across system
   const [accountStatus, setAccountStatus] = useState(() => {
@@ -169,166 +156,39 @@ export default function App() {
   const [glassmorphic, setGlassmorphic] = useState(false);
   const [currencyForm, setCurrencyForm] = useState<"symbol" | "code">("symbol");
 
-  // Dynamic tables (completely 100% empty of mock data upon initial page load)
-  const [jobs, setJobs] = useState<Job[]>(() => {
-    const saved = localStorage.getItem("timegig_jobs");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [tenders, setTenders] = useState<Tender[]>(() => {
-    const saved = localStorage.getItem("timegig_tenders");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [gigs, setGigs] = useState<Gig[]>(() => {
-    const saved = localStorage.getItem("timegig_gigs");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() => {
-    const saved = localStorage.getItem("timegig_gallery");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  // Sync back to local storage automatically
-  useEffect(() => {
-    localStorage.setItem("timegig_jobs", JSON.stringify(jobs));
-  }, [jobs]);
+  // Dynamic tables (fetched from Supabase)
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [tenders, setTenders] = useState<Tender[]>([]);
+  const [gigs, setGigs] = useState<Gig[]>([]);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
 
   useEffect(() => {
-    localStorage.setItem("timegig_tenders", JSON.stringify(tenders));
-  }, [tenders]);
-
-  useEffect(() => {
-    localStorage.setItem("timegig_gigs", JSON.stringify(gigs));
-  }, [gigs]);
-
-  useEffect(() => {
-    localStorage.setItem("timegig_gallery", JSON.stringify(galleryItems));
-  }, [galleryItems]);
+    const fetchData = async () => {
+      const { data: jobsData } = await supabase.from('jobs').select('*');
+      if (jobsData) setJobs(jobsData);
+      
+      const { data: tendersData } = await supabase.from('tenders').select('*');
+      if (tendersData) setTenders(tendersData);
+      
+      const { data: gigsData } = await supabase.from('gigs').select('*');
+      if (gigsData) setGigs(gigsData);
+      
+      const { data: galleryData } = await supabase.from('gallery').select('*');
+      if (galleryData) setGalleryItems(galleryData);
+    };
+    fetchData();
+  }, []);
 
   const [users, setUsers] = useState<any[]>(() => {
     const saved = localStorage.getItem("timegig_users");
     if (saved) return JSON.parse(saved);
-    return [
-      {
-        id: "1",
-        name: "John Doe",
-        avatar:
-          "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=200&q=80",
-        role: "Plumbing & Repairs Specialist",
-        location: "Soweto, Johannesburg",
-        rating: 4.9,
-        completedJobs: 42,
-        hourlyRate: "R150 - R200/hr",
-        bio: "Dedicated master plumber with 8+ years experience solving emergency blockages, geyser installations, and general home pipeline refitting across Gauteng.",
-        skills: ["Geysers", "Drainage", "Leak Detection", "Pipes"],
-        online: true,
-        verified: true,
-        coins: 10,
-        lookingForJobs: true,
-      },
-      {
-        id: "2",
-        name: "Nhlanhla Ndlovu",
-        avatar:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80",
-        role: "Interior Designer & Painter",
-        location: "Green Point, Cape Town",
-        rating: 4.8,
-        completedJobs: 29,
-        hourlyRate: "R220/hr",
-        bio: "Experienced color consultant and interior wall designer specializing in premium textured coatings, residential paint-effects, and sanding.",
-        skills: ["Painting", "Wallpapers", "Sanding", "Plastering"],
-        online: false,
-        verified: true,
-        coins: 10,
-        lookingForJobs: true,
-      },
-      {
-        id: "3",
-        name: "Tshepo Mokwena",
-        avatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80",
-        role: "Certified Electrician",
-        location: "Sandton, Johannesburg",
-        rating: 4.95,
-        completedJobs: 56,
-        hourlyRate: "R250/hr",
-        bio: "High and low voltage commercial technician. Board certified for Eskom connection upgrades, single-phase wiring patterns, and inverter setups.",
-        skills: ["Inverters", "Wiring", "Distribution Boards", "Solar"],
-        online: true,
-        verified: true,
-        coins: 10,
-        lookingForJobs: false,
-      },
-      {
-        id: "4",
-        name: "Aphiwe Cele",
-        avatar:
-          "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80",
-        role: "Home Organization & Cleaning Pro",
-        location: "Umhlanga, Durban",
-        rating: 4.7,
-        completedJobs: 18,
-        hourlyRate: "R110/hr",
-        bio: "Professional organizer specializing in large-scale residential decluttering, post-move cleanups, and regular domestic maintenance.",
-        skills: ["Deep Cleaning", "Organization", "Laundry", "Ironing"],
-        online: true,
-        verified: false,
-        coins: 10,
-        lookingForJobs: true,
-      },
-    ];
+    return [];
   });
 
   const [adminPayments, setAdminPayments] = useState<any[]>(() => {
     const saved = localStorage.getItem("timegig_admin_payments");
     if (saved) return JSON.parse(saved);
-    return [
-      {
-        id: "tx-initial",
-        userRef: "usr-lucihano",
-        userName: "Lucihano Matthews",
-        userAvatar:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80",
-        coinsAmount: 150,
-        priceZAR: 34.99,
-        reference: "150 coins signup reward",
-        date: "2026-05-21 12:00",
-        status: "approved",
-        type: "deposit",
-        amount: 150,
-        description: "New account signup reward tokens",
-      },
-      {
-        id: "tx-pending-1",
-        userRef: "usr-nhlanhla",
-        userName: "Nhlanhla Ndlovu",
-        userAvatar:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80",
-        coinsAmount: 100,
-        priceZAR: 24.99,
-        reference: "100 coins deposit",
-        date: "2026-05-22 07:15",
-        status: "pending",
-        type: "deposit",
-        amount: 100,
-        description: "Refill Package: 100 Coins",
-      },
-      {
-        id: "tx-pending-2",
-        userRef: "usr-tshepo",
-        userName: "Tshepo Mokwena",
-        userAvatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80",
-        coinsAmount: 200,
-        priceZAR: 34.99,
-        reference: "200 solar task refill",
-        date: "2026-05-22 07:35",
-        status: "pending",
-        type: "deposit",
-        amount: 200,
-        description: "Refill Package: 200 Coins",
-      },
-    ];
+    return [];
   });
 
   useEffect(() => {
@@ -406,10 +266,7 @@ export default function App() {
   };
 
   const loadDemoData = () => {
-    setJobs(sampleJobs);
-    setTenders(sampleTenders);
-    setGigs(sampleGigs);
-    setGalleryItems(sampleGalleryItems);
+    // No-op - mock data removed
   };
 
   const clearAllData = () => {
@@ -640,7 +497,7 @@ export default function App() {
                 TimeGig
                 <div className="absolute -top-3 -right-12 flex items-center gap-1 bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider rotate-6 transform">
                   <Shield size={12} />
-                  <span>Legit</span>
+                  <span><T>Legit</T></span>
                 </div>
               </div>
             </div>
@@ -648,7 +505,7 @@ export default function App() {
               <span className="w-2 h-2 rounded-full bg-blue-600"></span>
               <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
               <span className="w-2 h-2 rounded-full bg-green-600"></span>
-              South Africa
+              <T>South Africa</T>
             </div>
           </motion.div>
         ) : !isRegistered && !hasSkippedRegistration ? (
@@ -701,10 +558,10 @@ export default function App() {
                       <Shield size={20} className="text-emerald-400" />
                     </div>
                     <div>
-                      <h1 className="text-sm font-black text-white tracking-widest uppercase">Admin Controller</h1>
+                      <h1 className="text-sm font-black text-white tracking-widest uppercase"><T>Admin Controller</T></h1>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-tighter">System Live</span>
+                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-tighter"><T>System Live</T></span>
                       </div>
                     </div>
                   </div>
@@ -750,11 +607,11 @@ export default function App() {
                         onClick={() => setActiveTab("home")}
                         className="text-xl font-black bg-gradient-to-r from-green-600 to-indigo-900 bg-clip-text text-transparent focus:outline-none hover:opacity-80 transition-opacity cursor-pointer"
                       >
-                        TimeGig
+                        <T>TimeGig</T>
                       </button>
                       <div className="flex items-center gap-1 mb-1 bg-green-100 text-green-700 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">
                         <Shield size={10} />
-                        <span>Verified Legit</span>
+                        <span><T>Verified Legit</T></span>
                       </div>
                     </div>
                   </div>
@@ -790,7 +647,7 @@ export default function App() {
                         }}
                         className="bg-indigo-600 text-white text-[10px] font-black px-3 py-2 rounded-xl uppercase tracking-tighter shadow-sm active:scale-95 transition-transform"
                       >
-                        Sign In
+                        <T>Sign In</T>
                       </button>
                     ) : (
                       <button
@@ -824,7 +681,7 @@ export default function App() {
                     <div className="fixed top-16 right-16 mt-1 w-80 bg-white/95 backdrop-blur-md border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
                       <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                         <h4 className="font-bold text-gray-900 text-sm">
-                          Notifications
+                          <T>Notifications</T>
                         </h4>
                         <button
                           onClick={() =>
@@ -834,13 +691,13 @@ export default function App() {
                           }
                           className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
                         >
-                          Mark all read
+                          <T>Mark all read</T>
                         </button>
                       </div>
                       <div className="max-h-80 overflow-y-auto">
                         {notifications.length === 0 ? (
                           <div className="p-6 text-center text-gray-500 text-sm">
-                            No new notifications
+                            <T>No new notifications</T>
                           </div>
                         ) : (
                           notifications.map((notif) => (
@@ -861,14 +718,14 @@ export default function App() {
                                 <h5
                                   className={`text-sm ${!notif.read ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}
                                 >
-                                  {notif.title}
+                                  <T>{notif.title}</T>
                                 </h5>
                                 {!notif.read && (
                                   <span className="w-2 h-2 bg-indigo-600 rounded-full mt-1.5 shrink-0" />
                                 )}
                               </div>
                               <p className="text-xs text-gray-500 line-clamp-2">
-                                {notif.message}
+                                <T>{notif.message}</T>
                               </p>
                             </div>
                           ))
@@ -945,17 +802,15 @@ export default function App() {
                   <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-indigo-900 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-md">
                     <div className="absolute top-0 right-0 -mr-12 -mt-12 w-48 h-48 bg-yellow-400/20 rounded-full blur-2xl block" />
                     <div className="relative z-10 space-y-4">
-                      <div className="space-y-1.5">
+                        <div className="space-y-1.5">
                         <span className="text-[10px] bg-yellow-400/30 text-yellow-100 font-extrabold px-2.5 py-1 rounded-full uppercase tracking-widest border border-yellow-300/20">
-                          Mzansi Worker Network
+                          <T>Mzansi Worker Network</T>
                         </span>
                         <h2 className="text-3xl font-black tracking-tight mt-1">
-                          {isGuest ? "Welcome to Mzansi" : `Sanibonani, ${profileName.trim().split(' ')[0] || "User"}`}!
+                          {isGuest ? <T>Welcome to Mzansi</T> : <><T>Sanibonani</T>, {profileName.trim().split(' ')[0] || <T>User</T>}</>}!
                         </h2>
                         <p className="text-sm text-green-100/90 max-w-lg leading-relaxed">
-                          Welcome to your secure local jobs, gigs and government
-                          tenders registry. Navigate using the launcher icons
-                          below.
+                          <T>Welcome to your secure local jobs, gigs and government tenders registry. Navigate using the launcher icons below.</T>
                         </p>
                       </div>
 
@@ -964,44 +819,44 @@ export default function App() {
                         {isGuest ? (
                           <div className="bg-white/10 backdrop-blur rounded-2xl p-3 border border-white/10">
                             <span className="text-[10px] text-indigo-200 uppercase font-black tracking-wider block">
-                              Guest Mode
+                              <T>Guest Mode</T>
                             </span>
                             <span className="text-lg font-black block mt-1 uppercase tracking-tighter">
-                              Viewing
+                              <T>Viewing</T>
                             </span>
                           </div>
                         ) : (
                           <div className="bg-white/10 backdrop-blur rounded-2xl p-3 border border-white/10">
                             <span className="text-[10px] text-green-200 uppercase font-black tracking-wider block">
-                              Your Wallet
+                              <T>Your Wallet</T>
                             </span>
                             <span className="text-lg font-black block mt-1">
-                              {coins} Coins
+                              {coins} <T>Coins</T>
                             </span>
                           </div>
                         )}
                         <div className="bg-white/10 backdrop-blur rounded-2xl p-3 border border-white/10">
                           <span className="text-[10px] text-green-200 uppercase font-black tracking-wider block">
-                            Jobs Listed
+                            <T>Jobs Listed</T>
                           </span>
                           <span className="text-lg font-black block mt-1">
-                            {jobs.length} Active
+                            {jobs.length} <T>Active</T>
                           </span>
                         </div>
                         <div className="bg-white/10 backdrop-blur rounded-2xl p-3 border border-white/10">
                           <span className="text-[10px] text-green-200 uppercase font-black tracking-wider block">
-                            Gigs Found
+                            <T>Gigs Found</T>
                           </span>
                           <span className="text-lg font-black block mt-1">
-                            {gigs.length} Gigs
+                            {gigs.length} <T>Gigs</T>
                           </span>
                         </div>
                         <div className="bg-white/10 backdrop-blur rounded-2xl p-3 border border-white/10">
                           <span className="text-[10px] text-green-200 uppercase font-black tracking-wider block">
-                            Tenders Open
+                            <T>Tenders Open</T>
                           </span>
                           <span className="text-lg font-black block mt-1">
-                            {tenders.length} Notices
+                            {tenders.length} <T>Notices</T>
                           </span>
                         </div>
                       </div>
@@ -1011,7 +866,7 @@ export default function App() {
                   {/* Feature Launcher Grid */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-black tracking-widest text-gray-400 uppercase text-center sm:text-left">
-                      Activate Feature Modules
+                      <T>Activate Feature Modules</T>
                     </h3>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -1027,15 +882,14 @@ export default function App() {
                         <div>
                           <div className="flex justify-between items-center">
                             <h4 className="font-extrabold text-base text-gray-950">
-                              Jobs Portal
+                              <T>Jobs Portal</T>
                             </h4>
                             <span className="text-[10px] font-black bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-                              {jobs.length} listed
+                              {jobs.length} <T>listed</T>
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                            Search full-time & contracts or publish corporate
-                            job specs instantly.
+                            <T>Search full-time & contracts or publish corporate job specs instantly.</T>
                           </p>
                         </div>
                       </button>
@@ -1052,15 +906,14 @@ export default function App() {
                         <div>
                           <div className="flex justify-between items-center">
                             <h4 className="font-extrabold text-base text-gray-950">
-                              Handyman Gigs
+                              <T>Handyman Gigs</T>
                             </h4>
-                            <span className="text-[10px] font-black bg-yellow-100 text-yellow-900 px-2 py-0.5 rounded-full">
-                              {gigs.length} open
+                            <span className="text-[10px] font-black bg-yellow-101 text-yellow-900 px-2 py-0.5 rounded-full">
+                              {gigs.length} <T>open</T>
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                            Find local micro-jobs: repairs, moving flats,
-                            plumbing and mounting.
+                            <T>Find local micro-jobs: repairs, moving flats, plumbing and mounting.</T>
                           </p>
                         </div>
                       </button>
@@ -1077,15 +930,14 @@ export default function App() {
                         <div>
                           <div className="flex justify-between items-center">
                             <h4 className="font-extrabold text-base text-gray-950">
-                              Gov Tenders
+                              <T>Gov Tenders</T>
                             </h4>
                             <span className="text-[10px] font-black bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                              {tenders.length} active
+                              {tenders.length} <T>active</T>
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                            Browse official municipality contract tenders,
-                            gazettes & bid details.
+                            <T>Browse official municipality contract tenders, gazettes & bid details.</T>
                           </p>
                         </div>
                       </button>
@@ -1210,42 +1062,19 @@ export default function App() {
                         </div>
                         <div>
                           <h4 className="font-extrabold text-base text-gray-950">
-                            Settings
+                            <T>Settings</T>
                           </h4>
                           <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                            Adjust layout styling, glassmorphism UI toggles &
-                            cache resets.
+                            <T>Adjust layout styling, glassmorphism UI toggles & cache resets.</T>
                           </p>
                         </div>
                       </button>
                     </div>
-
-                    {/* Demonstration Seeder Ribbon */}
-                    {jobs.length === 0 && (
-                      <div className="bg-indigo-50 border border-indigo-150 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-3 mt-4 text-center sm:text-left">
-                        <div>
-                          <p className="text-xs font-bold text-indigo-950">
-                            Database Cache is Empty
-                          </p>
-                          <p className="text-[10px] text-indigo-700 font-semibold mt-0.5">
-                            Seed demo Mzansi data sets or post individual items
-                            to preview features.
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={loadDemoData}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all shrink-0 shadow-xs"
-                        >
-                          Load South African Samples
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
               ) : activeTab === "profile" ? (
                 <div className="max-w-2xl mx-auto bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-                  <h2 className="text-2xl font-semibold">User Profile</h2>
+                  <h2 className="text-2xl font-semibold"><T>User Profile</T></h2>
 
                   <div className="flex flex-col items-center gap-4 border-b pb-6">
                     <label className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden text-gray-400 border-4 border-dashed border-yellow-400 hover:border-green-600 cursor-pointer transition-colors relative group">
@@ -1260,9 +1089,9 @@ export default function App() {
                       )}
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <span className="text-xs text-white font-medium text-center">
-                          Tap to Change
+                          <T>Tap to Change</T>
                           <br />
-                          Photo
+                          <T>Photo</T>
                         </span>
                       </div>
                       <input
@@ -1283,7 +1112,7 @@ export default function App() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold mb-1 text-gray-700">
-                        Full Name
+                        <T>Full Name</T>
                       </label>
                       <input
                         type="text"
@@ -1294,7 +1123,7 @@ export default function App() {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold mb-1 text-gray-700">
-                        Email Address
+                        <T>Email Address</T>
                       </label>
                       <input
                         type="email"
@@ -1305,7 +1134,7 @@ export default function App() {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold mb-1 text-gray-700">
-                        Experience & Bio
+                        <T>Experience & Bio</T>
                       </label>
                       <textarea
                         rows={4}
@@ -1317,7 +1146,7 @@ export default function App() {
 
                     <div>
                       <label className="block text-sm font-semibold mb-2 text-gray-700">
-                        CV & Certificates
+                        <T>CV & Certificates</T>
                       </label>
 
                       {userDocuments.length > 0 && (
@@ -1338,7 +1167,7 @@ export default function App() {
                                 download={doc.name}
                                 className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 text-xs font-semibold px-3 py-1 bg-indigo-50 rounded-lg transition-colors"
                               >
-                                <Download size={14} /> Download
+                                <Download size={14} /> <T>Download</T>
                               </a>
                             </div>
                           ))}
@@ -1354,10 +1183,10 @@ export default function App() {
                         />
                         <UploadCloud size={24} className="mb-2 text-gray-400" />
                         <span className="text-sm font-semibold text-gray-600">
-                          Tap to upload your CV and certificates
+                          <T>Tap to upload your CV and certificates</T>
                         </span>
                         <span className="text-xs text-gray-400 mt-1">
-                          PDF, DOCX, JPG, PNG (Max 5MB)
+                          <T>PDF, DOCX, JPG, PNG (Max 5MB)</T>
                         </span>
                       </label>
                     </div>
@@ -1371,15 +1200,15 @@ export default function App() {
                       {isSavingProfile ? (
                         <>
                           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                          Saving...
+                          <T>Saving</T>...
                         </>
                       ) : profileSaved ? (
                         <>
                           <CheckCircle size={20} />
-                          Congratulations, Profile Saved!
+                          <T>Congratulations, Profile Saved!</T>
                         </>
                       ) : (
-                        "Save Profile Information"
+                        <T>Save Profile Information</T>
                       )}
                     </button>
                   </div>
@@ -1391,7 +1220,6 @@ export default function App() {
                   onApply={() => {}}
                   appliedJobIds={[]}
                   onAddJob={(newJob) => setJobs((prev) => [newJob, ...prev])}
-                  onLoadSamples={loadDemoData}
                   isGuest={isGuest}
                   onSignUp={() => setHasSkippedRegistration(false)}
                 />
@@ -1401,7 +1229,6 @@ export default function App() {
                   onAddTender={(newTender) =>
                     setTenders((prev) => [newTender, ...prev])
                   }
-                  onLoadSamples={loadDemoData}
                   isGuest={isGuest}
                   onSignUp={() => setHasSkippedRegistration(false)}
                 />
@@ -1412,7 +1239,6 @@ export default function App() {
                   onAddMediaToGallery={(item) =>
                     setGalleryItems((prev) => [item, ...prev])
                   }
-                  onLoadSamples={loadDemoData}
                   isGuest={isGuest}
                   onSignUp={() => setHasSkippedRegistration(false)}
                 />
@@ -1480,7 +1306,6 @@ export default function App() {
                   setGlassmorphic={setGlassmorphic}
                   currencyForm={currencyForm}
                   setCurrencyForm={setCurrencyForm}
-                  onLoadSamples={loadDemoData}
                   onClearAllData={clearAllData}
                   isGuest={isGuest}
                 />
@@ -1583,23 +1408,20 @@ export default function App() {
                         <Users size={32} className="text-indigo-600" />
                       </div>
                       <h3 className="text-xl font-black text-gray-900 mb-2">
-                        Join "Hire Pros"
+                        <T>Join "Hire Pros"</T>
                       </h3>
                       <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                        Display your profile in the Users feature to be
-                        discovered by clients and contractors.
+                        <T>Display your profile in the Users feature to be discovered by clients and contractors.</T>
                       </p>
 
                       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-16 h-16 bg-amber-200/40 rounded-full -mr-8 -mt-8" />
                         <h4 className="font-bold text-amber-900 text-sm mb-1 flex items-center gap-1.5">
                           <CheckCircle size={16} className="text-amber-600" />{" "}
-                          15 Days Free
+                          <T>15 Days Free</T>
                         </h4>
                         <p className="text-xs text-amber-800">
-                          As a new user, you receive your first 15 days of
-                          visibility completely free! After that, it costs 15
-                          coins per 30 days.
+                          <T>As a new user, you receive your first 15 days of visibility completely free! After that, it costs 15 coins per 30 days.</T>
                         </p>
                       </div>
 
@@ -1715,7 +1537,7 @@ export default function App() {
                         disabled={adminPin.length < 4}
                         className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-extrabold py-4 rounded-xl transition-all active:scale-95 text-sm mt-4 shadow-md"
                       >
-                        Authorize
+                        <T>Authorize</T>
                       </button>
                     </div>
                   </motion.div>

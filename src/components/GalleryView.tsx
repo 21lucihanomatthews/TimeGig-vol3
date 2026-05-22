@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Share, Download, Edit2, Trash2, X, CheckCircle, Play, Film, Image as ImageIcon, FolderOpen, Calendar, Info, Search, Lock } from 'lucide-react';
 import { GalleryItem } from '../types';
 
+import { T, useLanguage } from './TranslationProvider';
+
 interface GalleryViewProps {
   items: GalleryItem[];
   setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
@@ -10,6 +12,7 @@ interface GalleryViewProps {
 }
 
 export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewProps) {
+  const { translateText } = useLanguage();
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -108,10 +111,10 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
         <div>
           <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
             <FolderOpen className="text-green-600" size={26} />
-            Secure Gallery Vault
+            <T>Secure Gallery Vault</T>
           </h3>
           <p className="text-sm text-gray-700 font-medium mt-1 leading-relaxed">
-            All your uploaded documents, images, video messages, and profile avatars are indexed here automatically in high fidelity.
+            <T>All your uploaded documents, images, video messages, and profile avatars are indexed here automatically in high fidelity.</T>
           </p>
         </div>
       </div>
@@ -123,7 +126,7 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-green-600 transition-colors" size={18} />
           <input
             type="text"
-            placeholder="Search gallery by title or tag name..."
+            placeholder={translateText("Search gallery by title or tag name...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-sm font-semibold text-gray-900 placeholder-gray-500 outline-none focus:bg-white focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all"
@@ -142,7 +145,7 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                   : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
               }`}
             >
-              {cat}
+              <T>{cat}</T>
             </button>
           ))}
         </div>
@@ -154,8 +157,8 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
           <div className="bg-gray-50 p-4 rounded-full mb-3 text-gray-400">
             <Search size={32} />
           </div>
-          <p className="text-base font-bold text-gray-800">No media found</p>
-          <p className="text-sm text-gray-500 mt-1">Try resetting your filter or search query.</p>
+          <p className="text-base font-bold text-gray-800"><T>No media found</T></p>
+          <p className="text-sm text-gray-500 mt-1"><T>Try resetting your filter or search query.</T></p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -194,7 +197,7 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                       )}
                       <span className="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
                         <Film size={12} />
-                        VIDEO
+                        <T>VIDEO</T>
                       </span>
                     </div>
                   ) : (
@@ -214,7 +217,7 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                       )}
                       <span className="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
                         <ImageIcon size={12} />
-                        IMAGE
+                        <T>IMAGE</T>
                       </span>
                     </div>
                   )}
@@ -223,15 +226,15 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                 {/* Details Block - HIGH CONTRAST */}
                 <div className="p-4 bg-white">
                   <span className="inline-block text-[10px] font-extrabold text-green-700 bg-green-50 px-2 py-0.5 rounded-md border border-green-100 uppercase tracking-wider mb-2">
-                    {item.category || 'General'}
+                    <T>{item.category || 'General'}</T>
                   </span>
                   <h4 className="text-gray-900 font-bold text-sm leading-tight line-clamp-2" title={item.title}>
-                    {item.title}
+                    <T>{item.title}</T>
                   </h4>
                   {isGuest && (
                     <div className="mt-2 text-[10px] font-black text-indigo-600 flex items-center gap-1">
                       <Lock size={10} />
-                      PRIVATE VAULT
+                      <T>PRIVATE VAULT</T>
                     </div>
                   )}
                 </div>
@@ -269,28 +272,28 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                 <div className="p-6 space-y-5">
                   <div className="flex items-center gap-2 border-b pb-3 mb-2">
                     <Edit2 className="text-green-600" size={20} />
-                    <h3 className="font-extrabold text-xl text-gray-900">Edit Media Data</h3>
+                    <h3 className="font-extrabold text-xl text-gray-900"><T>Edit Media Data</T></h3>
                   </div>
 
                   <div>
-                    <label className="text-xs font-extrabold text-gray-600 mb-1.5 block uppercase tracking-wider">Title / Name</label>
+                    <label className="text-xs font-extrabold text-gray-600 mb-1.5 block uppercase tracking-wider"><T>Title / Name</T></label>
                     <input 
                       type="text" 
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
                       className="w-full bg-gray-50 border-2 border-gray-200 px-3 py-3 rounded-xl text-sm font-semibold text-gray-900 focus:bg-white focus:border-green-600 outline-none transition-all"
-                      placeholder="Enter a recognizable title"
+                      placeholder={translateText("Enter a recognizable title")}
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-extrabold text-gray-600 mb-1.5 block uppercase tracking-wider">Category Tag</label>
+                    <label className="text-xs font-extrabold text-gray-600 mb-1.5 block uppercase tracking-wider"><T>Category Tag</T></label>
                     <input 
                       type="text" 
                       value={editCategory}
                       onChange={(e) => setEditCategory(e.target.value)}
                       className="w-full bg-gray-50 border-2 border-gray-200 px-3 py-3 rounded-xl text-sm font-semibold text-gray-900 focus:bg-white focus:border-green-600 outline-none transition-all"
-                      placeholder="e.g. Profile, Invoices, Chat Uploads"
+                      placeholder={translateText("e.g. Profile, Invoices, Chat Uploads")}
                     />
                   </div>
 
@@ -299,13 +302,13 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                       onClick={() => setIsEditing(false)} 
                       className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl text-sm font-bold transition-all"
                     >
-                      Cancel
+                      <T>Cancel</T>
                     </button>
                     <button 
                       onClick={saveEdit} 
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white flex justify-center items-center py-3 rounded-xl text-sm font-bold gap-1.5 transition-all shadow-sm"
                     >
-                      <CheckCircle size={18}/> Save New Data
+                      <CheckCircle size={18}/> <T>Save New Data</T>
                     </button>
                   </div>
                 </div>
@@ -315,31 +318,31 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="inline-block text-xs font-extrabold text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded-lg uppercase tracking-widest">
-                        {selectedItem.category || 'General'}
+                        <T>{selectedItem.category || 'General'}</T>
                       </span>
                       <span className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-1">
                         <Info size={12} />
-                        {isVideoUrl(selectedItem.url) ? 'Video Clip' : 'Image Photo'}
+                        <T>{isVideoUrl(selectedItem.url) ? 'Video Clip' : 'Image Photo'}</T>
                       </span>
                     </div>
 
                     <h3 className="text-2xl font-black text-gray-900 leading-tight">
-                      {selectedItem.title}
+                      <T>{selectedItem.title}</T>
                     </h3>
                     
                     {/* Metadata Card grid to ensure high quality metrics viewing */}
                     <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-2.5">
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-gray-500 font-bold flex items-center gap-1">
-                          <Calendar size={13} /> Saved On:
+                          <Calendar size={13} /> <T>Saved On</T>:
                         </span>
-                        <span className="text-gray-900 font-extrabold">Just now</span>
+                        <span className="text-gray-900 font-extrabold"><T>Just now</T></span>
                       </div>
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-gray-500 font-bold flex items-center gap-1">
-                          🔒 Encryption:
+                          🔒 <T>Encryption</T>:
                         </span>
-                        <span className="text-emerald-700 font-extrabold uppercase">Protected Local</span>
+                        <span className="text-emerald-700 font-extrabold uppercase"><T>Protected Local</T></span>
                       </div>
                     </div>
                   </div>
@@ -351,7 +354,7 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                       className="flex flex-col items-center justify-center gap-2 border-2 border-gray-100 hover:border-green-200 bg-gray-50 hover:bg-green-50 text-gray-800 hover:text-green-700 p-3.5 rounded-2xl transition-all cursor-pointer"
                     >
                       <Edit2 size={20} />
-                      <span className="text-xs font-extrabold uppercase tracking-wide">Edit Info</span>
+                      <span className="text-xs font-extrabold uppercase tracking-wide"><T>Edit Info</T></span>
                     </button>
 
                     <button 
@@ -359,7 +362,7 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                       className="flex flex-col items-center justify-center gap-2 border-2 border-gray-100 hover:border-green-200 bg-gray-50 hover:bg-green-50 text-gray-800 hover:text-green-700 p-3.5 rounded-2xl transition-all cursor-pointer"
                     >
                       <Share size={20} />
-                      <span className="text-xs font-extrabold uppercase tracking-wide">Copy / Share</span>
+                      <span className="text-xs font-extrabold uppercase tracking-wide"><T>Copy / Share</T></span>
                     </button>
 
                     <button 
@@ -367,7 +370,7 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                       className="flex flex-col items-center justify-center gap-2 border-2 border-gray-100 hover:border-green-200 bg-gray-50 hover:bg-green-50 text-gray-800 hover:text-green-700 p-3.5 rounded-2xl transition-all cursor-pointer"
                     >
                       <Download size={20} />
-                      <span className="text-xs font-extrabold uppercase tracking-wide">Download</span>
+                      <span className="text-xs font-extrabold uppercase tracking-wide"><T>Download</T></span>
                     </button>
 
                     <button 
@@ -375,7 +378,7 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                       className="flex flex-col items-center justify-center gap-2 border-2 border-red-50 hover:border-red-200 bg-red-50 hover:bg-red-100 text-red-600 p-3.5 rounded-2xl transition-all cursor-pointer"
                     >
                       <Trash2 size={20} />
-                      <span className="text-xs font-extrabold uppercase tracking-wide">Delete</span>
+                      <span className="text-xs font-extrabold uppercase tracking-wide"><T>Delete</T></span>
                     </button>
                   </div>
                 </div>
