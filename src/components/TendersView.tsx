@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
-import { Landmark, Search as SearchIcon, Calendar, ChevronRight, CheckCircle, Download, ExternalLink, PlusCircle, X } from 'lucide-react';
+import { Landmark, Search as SearchIcon, Calendar, ChevronRight, CheckCircle, Download, ExternalLink, PlusCircle, X, Lock } from 'lucide-react';
 import { Tender } from '../types';
+import { T } from './TranslationProvider';
 
 interface TendersViewProps {
   tenders: Tender[];
   onAddTender?: (tender: Tender) => void;
   onLoadSamples?: () => void;
+  isGuest?: boolean;
+  onSignUp?: () => void;
 }
 
-export function TendersView({ tenders, onAddTender, onLoadSamples }: TendersViewProps) {
+export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSignUp }: TendersViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [applySuccess, setApplySuccess] = useState(false);
+  const [showGuestPrompt, setShowGuestPrompt] = useState(false);
 
   // Custom tender creation states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -57,6 +61,10 @@ export function TendersView({ tenders, onAddTender, onLoadSamples }: TendersView
   );
 
   const handleOpenApply = (tender: Tender) => {
+    if (isGuest) {
+      setShowGuestPrompt(true);
+      return;
+    }
     setSelectedTender(tender);
     setApplySuccess(false);
   };
@@ -80,17 +88,23 @@ export function TendersView({ tenders, onAddTender, onLoadSamples }: TendersView
       <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h3 className="text-xl font-bold text-gray-900 tracking-tight">Government Tenders</h3>
-            <p className="text-sm text-gray-500 mt-1">Discover latest local and national government tenders and apply externally.</p>
+            <h3 className="text-xl font-bold text-gray-900 tracking-tight"><T>Government Tenders</T></h3>
+            <p className="text-sm text-gray-500 mt-1"><T>Discover latest local and national government tenders and apply externally.</T></p>
           </div>
           {onAddTender && (
             <button
               type="button"
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => {
+                if (isGuest) {
+                  setShowGuestPrompt(true);
+                } else {
+                  setShowCreateModal(true);
+                }
+              }}
               className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-xs px-4 py-3 rounded-xl cursor-pointer flex items-center gap-1.5 transition-all shadow-xs shrink-0"
             >
               <PlusCircle size={15} />
-              Gazette a Tender
+              <T>Gazette a Tender</T>
             </button>
           )}
         </div>
@@ -112,9 +126,9 @@ export function TendersView({ tenders, onAddTender, onLoadSamples }: TendersView
           <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 p-8 space-y-4 shadow-xs">
             <Landmark className="mx-auto text-gray-300" size={48} />
             <div className="space-y-1">
-              <h4 className="text-lg font-bold text-gray-800">No active government tenders listed</h4>
+              <h4 className="text-lg font-bold text-gray-800"><T>No active government tenders listed</T></h4>
               <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
-                Start by gazetting a public infrastructure tender, medical supply contract, or load municipal samples instantly.
+                <T>Start by gazetting a public infrastructure tender, medical supply contract, or load municipal samples instantly.</T>
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 justify-center items-center pt-2">
@@ -125,7 +139,7 @@ export function TendersView({ tenders, onAddTender, onLoadSamples }: TendersView
                   className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-1.5 transition-all shadow-xs"
                 >
                   <PlusCircle size={14} />
-                  Gazette a Tender Notice
+                  <T>Gazette a Tender Notice</T>
                 </button>
               )}
               {onLoadSamples && (
@@ -134,7 +148,7 @@ export function TendersView({ tenders, onAddTender, onLoadSamples }: TendersView
                   onClick={onLoadSamples}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all border border-gray-200"
                 >
-                  Load Sample Tenders
+                  <T>Load Sample Tenders</T>
                 </button>
               )}
             </div>
@@ -149,31 +163,38 @@ export function TendersView({ tenders, onAddTender, onLoadSamples }: TendersView
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${tender.status === 'Open' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-600'}`}>
-                    {tender.status}
+                    <T>{tender.status}</T>
                   </span>
                   <span className="text-xs text-gray-400 font-medium flex items-center gap-1">
-                    <Calendar size={12}/> Closes {tender.closingDate}
+                    <Calendar size={12}/> <T>Closes</T> <T>{tender.closingDate}</T>
                   </span>
                 </div>
                 <h4 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors">
-                  {tender.title}
+                  <T>{tender.title}</T>
                 </h4>
-                <div className="text-sm font-medium text-gray-600">{tender.department}</div>
+                <div className="text-sm font-medium text-gray-600"><T>{tender.department}</T></div>
                 
                 <div className="flex flex-wrap gap-y-1 gap-x-4 pt-1 text-xs text-gray-500 font-medium">
                   <div className="flex items-center gap-1 font-semibold text-green-600">
-                    Est. Value: {tender.value}
+                    <T>Est. Value</T>: <T>{tender.value}</T>
                   </div>
                 </div>
               </div>
 
               <div className="md:self-center flex flex-col items-stretch md:items-end gap-2 shrink-0">
-                <button
-                  className="bg-green-600 text-white hover:bg-green-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-xs flex items-center justify-center gap-1.5"
-                >
-                  View Details
-                  <ChevronRight size={16} />
-                </button>
+                {isGuest ? (
+                  <div className="bg-gray-100 text-gray-400 px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-dashed border-gray-200">
+                    <Lock size={14} />
+                    View Locked
+                  </div>
+                ) : (
+                  <button
+                    className="bg-green-600 text-white hover:bg-green-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-xs flex items-center justify-center gap-1.5"
+                  >
+                    <T>View Details</T>
+                    <ChevronRight size={16} />
+                  </button>
+                )}
               </div>
             </div>
           ))
@@ -244,11 +265,11 @@ export function TendersView({ tenders, onAddTender, onLoadSamples }: TendersView
               )}
 
               {isApplying ? (
-                 <div className="pt-4 border-t border-gray-100 text-center space-y-3 py-4">
-                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                   <h4 className="text-md font-bold text-gray-900">Redirecting...</h4>
-                   <p className="text-xs text-gray-500">Taking you to official gov site...</p>
-                 </div>
+                <div className="pt-4 border-t border-gray-100 text-center space-y-3 py-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                  <h4 className="text-md font-bold text-gray-900">Redirecting...</h4>
+                  <p className="text-xs text-gray-500">Taking you to official gov site...</p>
+                </div>
               ) : applySuccess ? (
                 <div className="pt-4 border-t border-gray-100 text-center space-y-3 py-4">
                   <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600">
@@ -261,6 +282,23 @@ export function TendersView({ tenders, onAddTender, onLoadSamples }: TendersView
                     className="mt-2 bg-gray-100 hover:bg-gray-200 font-bold px-5 py-2 rounded-xl text-xs"
                   >
                     Close
+                  </button>
+                </div>
+              ) : isGuest ? (
+                <div className="pt-4 border-t border-gray-100 text-center space-y-4 py-4">
+                  <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl space-y-2">
+                    <Lock className="mx-auto text-indigo-500" size={24} />
+                    <h4 className="text-sm font-extrabold text-indigo-900 uppercase">Tenders Feature Locked</h4>
+                    <p className="text-[11px] text-indigo-700 font-medium">To view official documents and apply for national government tenders, your company must be verified.</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedTender(null);
+                      if (onSignUp) onSignUp();
+                    }}
+                    className="w-full py-4 rounded-xl font-bold text-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-md"
+                  >
+                    Verify Company Now
                   </button>
                 </div>
               ) : (
@@ -331,6 +369,35 @@ export function TendersView({ tenders, onAddTender, onLoadSamples }: TendersView
                 Publish Tender Notice
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Guest Mode Prompt Overlay */}
+      {showGuestPrompt && (
+        <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Registration Required</h3>
+            <p className="text-gray-600 text-sm mb-6">
+              You must register your company to view full tender specifications and submit bids. 
+            </p>
+            <div className="space-y-3">
+               <button 
+                 onClick={() => {
+                   setShowGuestPrompt(false);
+                   if (onSignUp) onSignUp();
+                 }}
+                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all"
+               >
+                 Verify Company
+               </button>
+               <button 
+                 onClick={() => setShowGuestPrompt(false)}
+                 className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition-colors"
+               >
+                 Cancel
+               </button>
+            </div>
           </div>
         </div>
       )}

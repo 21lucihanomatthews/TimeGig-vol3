@@ -1,17 +1,64 @@
 import React, { useState } from 'react';
-import { Search as SearchIcon, MapPin, Camera, CheckCircle, PlusCircle, X, Info, ClipboardList } from 'lucide-react';
+import { 
+  Search as SearchIcon, 
+  MapPin, 
+  Camera, 
+  CheckCircle, 
+  PlusCircle, 
+  X, 
+  Info, 
+  ClipboardList,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  Shield,
+  MessageSquare,
+  Sparkles,
+  Lock
+} from 'lucide-react';
 import { Gig, GalleryItem } from '../types';
+import { T } from './TranslationProvider';
 
 interface GigsViewProps {
   gigs: Gig[];
   onAddGig: (gig: Gig) => void;
   onAddMediaToGallery: (item: GalleryItem) => void;
   onLoadSamples?: () => void;
+  isGuest?: boolean;
+  onSignUp?: () => void;
 }
 
-export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples }: GigsViewProps) {
+export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, isGuest, onSignUp }: GigsViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   
+  // Instruction Guide State (Persistent in local storage)
+  const [showGuide, setShowGuide] = useState(() => {
+    return localStorage.getItem('timegig_hide_gigs_guide') !== 'true';
+  });
+  const [showGuestPrompt, setShowGuestPrompt] = useState(false);
+
+  const [isGuideDismissed, setIsGuideDismissed] = useState(() => {
+    return localStorage.getItem('timegig_gigs_guide_dismissed') === 'true';
+  });
+
+  const toggleGuide = () => {
+    const nextVal = !showGuide;
+    setShowGuide(nextVal);
+    localStorage.setItem('timegig_hide_gigs_guide', String(!nextVal));
+  };
+
+  const dismissGuide = () => {
+    setIsGuideDismissed(true);
+    localStorage.setItem('timegig_gigs_guide_dismissed', 'true');
+  };
+
+  const unhideGuide = () => {
+    setIsGuideDismissed(false);
+    setShowGuide(true);
+    localStorage.setItem('timegig_gigs_guide_dismissed', 'false');
+    localStorage.setItem('timegig_hide_gigs_guide', 'false');
+  };
+
   // Create Gig State
   const [showCreateGig, setShowCreateGig] = useState(false);
   const [newGig, setNewGig] = useState({ title: '', description: '', price: '', location: '', imageUrl: 'https://images.unsplash.com/photo-1598520106830-8c45c2035420?w=400&q=80' });
@@ -81,6 +128,10 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples }:
   };
 
   const handleApplyStart = (gig: Gig) => {
+    if (isGuest) {
+       setShowGuestPrompt(true);
+       return;
+    }
     setSelectedGig(gig);
     setApplyStep('info');
     setCapturedLeft(false);
@@ -96,17 +147,141 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples }:
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h3 className="text-xl font-bold text-gray-900 tracking-tight">Community Gigs</h3>
-          <p className="text-sm text-gray-500 mt-1">Short-term tasks and casual jobs around you.</p>
+          <h3 className="text-xl font-bold text-gray-900 tracking-tight"><T>Community Gigs</T></h3>
+          <p className="text-sm text-gray-500 mt-1 flex items-center gap-2 flex-wrap">
+            <span><T>Short-term tasks and casual jobs around you.</T></span>
+            {isGuideDismissed && (
+              <button 
+                onClick={unhideGuide}
+                className="text-xs text-green-600 font-extrabold hover:text-white hover:bg-green-600 transition-all cursor-pointer select-none inline-flex items-center gap-1.5 bg-green-50 px-2.5 py-1 rounded-lg border border-green-100/80 animate-pulse"
+              >
+                <HelpCircle size={13} />
+                <span><T>Show Instructions Guide</T></span>
+              </button>
+            )}
+          </p>
         </div>
         <button 
-          onClick={() => setShowCreateGig(true)}
+          onClick={() => {
+            if (isGuest) {
+              setShowGuestPrompt(true);
+            } else {
+              setShowCreateGig(true);
+            }
+          }}
           className="bg-green-600 text-white hover:bg-green-700 px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2"
         >
           <PlusCircle size={18} />
-          Create a Gig
+          <T>Create a Gig</T>
         </button>
       </div>
+
+      {/* Gig Feature Quick Instructions Guide for Dummies (Collapsible & Auto-persisted) */}
+      {!isGuideDismissed && (
+        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden transition-all duration-300">
+          <div 
+            onClick={toggleGuide}
+            className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50/50 hover:bg-gray-100/50 text-left cursor-pointer transition-all select-none focus:outline-none gap-3"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-green-50 text-green-600 rounded-xl border border-green-100/40">
+                <HelpCircle size={18} />
+              </div>
+              <div>
+                <h4 className="font-black text-sm text-slate-950">💡 <T>How Do Gigs Work?</T></h4>
+                <p className="text-[10px] text-gray-450 font-bold"><T>Unlocking South Africa's casual workspace in 4 easy steps</T></p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 self-end sm:self-auto">
+              <div 
+                className="flex items-center gap-1.5 text-xs font-black text-green-700 bg-green-50/50 border border-green-100/50 px-2.5 py-1.5 rounded-lg transition-all"
+              >
+                <span>{showGuide ? <T>Collapse Info</T> : <T>Expand Info</T>}</span>
+                {showGuide ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </div>
+              
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  dismissGuide();
+                }}
+                className="flex items-center gap-1 text-xs text-red-600 font-extrabold hover:bg-red-50 border border-transparent hover:border-red-100 px-2 py-1.5 rounded-lg transition-all cursor-pointer"
+                title="Hide instructions panel completely"
+              >
+                <X size={14} className="stroke-[2.5]" />
+                <span><T>Hide Guide</T></span>
+              </button>
+            </div>
+          </div>
+
+        {showGuide && (
+          <div className="p-5 border-t border-gray-150 space-y-4 bg-white animate-in slide-in-from-top-2 duration-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              
+              {/* Step 1 */}
+              <div className="bg-slate-50/50 p-3.5 rounded-xl border border-gray-100/80 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-green-600 text-white font-black w-5 h-5 rounded-full flex items-center justify-center shrink-0">1</span>
+                  <h5 className="font-extrabold text-xs text-slate-900">Post a Casual Job</h5>
+                </div>
+                <p className="text-[11px] font-bold text-gray-550 leading-relaxed">
+                  Anyone can publish a small, casual job (moving furniture, sanding, basic plumbing) and quote an instant price offer in South African Rand (R).
+                </p>
+              </div>
+
+              {/* Step 2 */}
+              <div className="bg-slate-50/50 p-3.5 rounded-xl border border-gray-100/80 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-green-600 text-white font-black w-5 h-5 rounded-full flex items-center justify-center shrink-0">2</span>
+                  <h5 className="font-extrabold text-xs text-slate-900">Apply Instantly</h5>
+                </div>
+                <p className="text-[11px] font-bold text-gray-550 leading-relaxed">
+                  Notice a task you can handle? Tap <strong className="text-green-600">"I Can Do This"</strong> to initiate your application seamlessly.
+                </p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="bg-slate-50/50 p-3.5 rounded-xl border border-gray-100/80 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-green-600 text-white font-black w-5 h-5 rounded-full flex items-center justify-center shrink-0">3</span>
+                  <div className="flex items-center gap-1">
+                    <Shield size={12} className="text-indigo-600" />
+                    <h5 className="font-extrabold text-xs text-slate-900">Face Scan Check</h5>
+                  </div>
+                </div>
+                <p className="text-[11px] font-bold text-gray-550 leading-relaxed">
+                  For safety, applicants complete a live face-angle verification (Turn Left & Turn Right) to verify your real identity and build trust.
+                </p>
+              </div>
+
+              {/* Step 4 */}
+              <div className="bg-slate-50/50 p-3.5 rounded-xl border border-gray-100/80 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-green-600 text-white font-black w-5 h-5 rounded-full flex items-center justify-center shrink-0">4</span>
+                  <div className="flex items-center gap-1">
+                    <MessageSquare size={12} className="text-indigo-600" />
+                    <h5 className="font-extrabold text-xs text-slate-900">Chat & Work</h5>
+                  </div>
+                </div>
+                <p className="text-[11px] font-bold text-gray-550 leading-relaxed">
+                  Once details are shared, connected pairs unlock a direct messaging line in the <strong className="text-green-600">Inbox</strong> to align, complete the task, and earn!
+                </p>
+              </div>
+
+            </div>
+
+            <div className="bg-amber-50/80 border border-amber-150 p-3.5 rounded-xl flex items-start gap-2.5 text-[11px] text-amber-900 font-semibold leading-relaxed">
+              <Sparkles size={14} className="text-amber-600 shrink-0 mt-0.5" />
+              <span>
+                <strong>System Feature Tip:</strong> Any job photos uploaded when publishing a Gig are automatically safely saved to the central <strong>Media Portals & Gallery</strong>! Give it a try.
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+      )}
 
       {successNotification && (
         <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 flex gap-3 items-start relative shadow-xs animate-in fade-in slide-in-from-top-3 duration-200">
@@ -169,34 +344,66 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples }:
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {filteredGigs.map((gig) => (
-            <div key={gig.id} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs flex flex-col hover:shadow-md transition-all duration-300">
-              <div className="h-48 w-full bg-gray-200 relative">
-                <img src={gig.imageUrl} alt={gig.title} className="w-full h-full object-cover" />
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur text-gray-900 text-xs font-bold px-2 py-1 rounded-md">
-                  {gig.postedDate}
+            <div key={gig.id} className="bg-white rounded-xl overflow-hidden border border-gray-150 shadow-xs flex flex-col hover:shadow-xs hover:border-green-500/20 transition-all duration-300">
+              {/* Square Image container like Facebook Marketplace */}
+              <div className="aspect-square w-full bg-gray-200 relative overflow-hidden">
+                <img 
+                  src={gig.imageUrl} 
+                  alt={gig.title} 
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                  referrerPolicy="no-referrer" 
+                />
+                {isGuest && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="bg-black/30 backdrop-blur-md p-2.5 rounded-full border border-white/20">
+                      <Lock size={20} className="text-white" />
+                    </div>
+                  </div>
+                )}
+                <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-xs text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded">
+                  <T>{gig.postedDate}</T>
                 </div>
               </div>
-              <div className="p-5 flex flex-col flex-grow">
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="text-lg font-bold text-gray-900 line-clamp-1">{gig.title}</h4>
-                  <span className="font-extrabold text-emerald-600 shrink-0 ml-2">{gig.price}</span>
-                </div>
-                <p className="text-xs font-semibold text-gray-500 mb-2">Posted by {gig.creatorName}</p>
-                <p className="text-sm text-gray-600 line-clamp-2 mb-4 flex-grow">{gig.description}</p>
-                
-                <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-auto">
-                  <div className="flex items-center gap-1 text-xs text-gray-500 font-medium">
-                    <MapPin size={14} /> {gig.location}
+              
+              {/* Product Information under image */}
+              <div className="p-2.5 flex flex-col flex-grow justify-between gap-1.5">
+                <div>
+                  {/* Price first, highly prominent */}
+                  <span className="block font-black text-slate-950 text-sm sm:text-base leading-none">
+                    <T>{gig.price}</T>
+                  </span>
+                  
+                  {/* Title under the price */}
+                  <h4 className="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-1 leading-snug mt-1" title={gig.title}>
+                    <T>{gig.title}</T>
+                  </h4>
+                  
+                  {/* Mini-details and Location */}
+                  <div className="flex flex-col gap-0.5 mt-1 text-[10px] text-gray-400 font-bold">
+                    <span className="truncate">By <T>{gig.creatorName}</T></span>
+                    <div className="flex items-center gap-0.5 text-gray-450 truncate">
+                      <MapPin size={10} className="text-gray-400 shrink-0" />
+                      <span className="truncate"><T>{gig.location}</T></span>
+                    </div>
                   </div>
+                </div>
+
+                {/* Compact button exactly for dummies */}
+                {isGuest ? (
+                  <div className="mt-1 p-1.5 bg-gray-50 border border-dashed border-gray-200 rounded-lg flex items-center justify-center gap-1.5 text-gray-400">
+                    <Lock size={12} />
+                    <span className="text-[10px] font-bold">Gig Locked</span>
+                  </div>
+                ) : (
                   <button 
                     onClick={() => handleApplyStart(gig)}
-                    className="bg-gray-900 text-white font-bold px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors"
+                    className="w-full bg-gray-900 hover:bg-green-600 text-white font-extrabold py-1.5 rounded-lg text-xs transition-colors shadow-xs cursor-pointer active:scale-95 shrink-0 mt-1"
                   >
                     I Can Do This
                   </button>
-                </div>
+                )}
               </div>
             </div>
           ))}
@@ -327,6 +534,35 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples }:
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Guest Mode Prompt Overlay */}
+      {showGuestPrompt && (
+        <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Registration Required</h3>
+            <p className="text-gray-600 text-sm mb-6">
+              You must register to interact with Gigs (create or apply). 
+            </p>
+            <div className="space-y-3">
+               <button 
+                 onClick={() => {
+                   setShowGuestPrompt(false);
+                   if (onSignUp) onSignUp();
+                 }}
+                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all"
+               >
+                 Register Now
+               </button>
+               <button 
+                 onClick={() => setShowGuestPrompt(false)}
+                 className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition-colors"
+               >
+                 Cancel
+               </button>
+            </div>
           </div>
         </div>
       )}

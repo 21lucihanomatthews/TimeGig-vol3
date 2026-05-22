@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Settings, ShieldCheck, CreditCard, Bell, Key, RefreshCcw, Eye, Smile, Volume2, Globe, Heart } from 'lucide-react';
+import { Settings, BellOff, Bell, UserCheck, UserX, Info, Globe, Languages } from 'lucide-react';
+import { T, useLanguage } from './TranslationProvider';
 
 interface SettingsViewProps {
-  coins: number;
-  setCoins: React.Dispatch<React.SetStateAction<number>>;
-  glassmorphic: boolean;
-  setGlassmorphic: (val: boolean) => void;
-  currencyForm: 'symbol' | 'code';
-  setCurrencyForm: (val: 'symbol' | 'code') => void;
+  coins?: number;
+  setCoins?: React.Dispatch<React.SetStateAction<number>>;
+  glassmorphic?: boolean;
+  setGlassmorphic?: (val: boolean) => void;
+  currencyForm?: 'symbol' | 'code';
+  setCurrencyForm?: (val: 'symbol' | 'code') => void;
   onLoadSamples?: () => void;
   onClearAllData?: () => void;
+  isGuest?: boolean;
 }
 
 export function SettingsView({
@@ -20,19 +22,23 @@ export function SettingsView({
   currencyForm,
   setCurrencyForm,
   onLoadSamples,
-  onClearAllData
+  onClearAllData,
+  isGuest
 }: SettingsViewProps) {
-  // Notification states
-  const [notifyTenders, setNotifyTenders] = useState(true);
-  const [notifyGigs, setNotifyGigs] = useState(true);
-  const [notifyJobs, setNotifyJobs] = useState(false);
+  const { language, setLanguage } = useLanguage();
 
-  // Regional language
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
-  const [idVerified, setIdVerified] = useState(true);
-  const [idNumber, setIdNumber] = useState('941012 5084 08 3'); // Sample SA ID format
+  // Offline notification state
+  const [offlineNotifications, setOfflineNotifications] = useState(() => {
+    return localStorage.getItem('timegig_offline_notifications') !== 'false';
+  });
+
+  // Account status state: 'active' or 'disabled'
+  const [accountStatus, setAccountStatus] = useState(() => {
+    return localStorage.getItem('timegig_account_status') || 'active';
+  });
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [customLanguage, setCustomLanguage] = useState('');
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -41,302 +47,254 @@ export function SettingsView({
     }, 3000);
   };
 
-  const handleResetCoins = () => {
-    setCoins(150);
-    if (onClearAllData) {
-      onClearAllData();
-    }
-    triggerToast("Coins wallet reset to 150 and all local listings cleared!");
+  const handleToggleOfflineNotifications = (checked: boolean) => {
+    setOfflineNotifications(checked);
+    localStorage.setItem('timegig_offline_notifications', String(checked));
+    triggerToast(
+      checked
+        ? "Offline notifications enabled! You will receive updates of new projects and payments when disconnected."
+        : "Offline notifications disabled."
+    );
   };
 
-  const handleToggleVerification = () => {
-    setIdVerified(!idVerified);
-    triggerToast(idVerified ? "ID Verification revoked." : "South African ID verified successfully via Home Affairs terminal!");
+  const handleToggleAccountStatus = () => {
+    const isCurrentlyActive = accountStatus === 'active';
+    const nextStatus = isCurrentlyActive ? 'disabled' : 'active';
+    setAccountStatus(nextStatus);
+    localStorage.setItem('timegig_account_status', nextStatus);
+    
+    // Broadcast storage change or write custom event so that App.tsx knows immediately
+    window.dispatchEvent(new Event('storage'));
+    
+    triggerToast(
+      nextStatus === 'active'
+        ? "Your account has been enabled. Your profile is now visible."
+        : "Your account is now disabled. It will be hidden from searches & public listings."
+    );
   };
 
-  const localLanguages = [
-    'English',
-    'isiZulu',
-    'isiXhosa',
-    'Afrikaans',
-    'Sesotho',
-    'Setswana',
-    'Sepedi',
-    'Xitsonga',
-    'siSwati',
-    'Tshivenda',
-    'isiNdebele'
+  const handleTranslateImmediate = (targetLang: string) => {
+    if (!targetLang || !targetLang.trim()) return;
+    const formattedLang = targetLang.trim().substring(0, 40);
+    setLanguage(formattedLang);
+    triggerToast(`Translating application to ${formattedLang} immediately...`);
+  };
+
+  const presetLanguages = [
+    'English', 'isiZulu', 'isiXhosa', 'Afrikaans', 'Sesotho', 
+    'Swahili', 'French', 'Spanish', 'Portuguese', 'German'
   ];
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-xl mx-auto space-y-6">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-xl flex items-center gap-2 border border-white/10 animate-in fade-in slide-in-from-top-4 duration-200">
-          <Smile className="text-yellow-400 shrink-0" size={16} />
-          <span>{toastMessage}</span>
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-55 bg-slate-900 border border-slate-800 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-xl flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-200">
+          <Info className="text-zinc-350 shrink-0 animate-pulse" size={16} />
+          <span><T>{toastMessage}</T></span>
         </div>
       )}
 
       {/* Main Settings Header */}
-      <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-6 border border-indigo-100 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-            <Settings className="text-indigo-600 animate-spin-slow" size={26} />
-            System Control Center
-          </h3>
-          <p className="text-sm text-gray-700 font-medium mt-1 leading-relaxed">
-            Configure South African regional localizations, user interface styling, security access layers, and notification schedules.
-          </p>
-        </div>
+      <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-xs">
+        <h3 className="text-xl font-bold text-gray-950 tracking-tight flex items-center gap-2">
+          <Settings className="text-gray-900" size={24} />
+          <T>System Preferences</T>
+        </h3>
+        <p className="text-xs text-gray-500 font-medium mt-1 leading-relaxed">
+          <T>Configure offline messaging capabilities, translate the system interface instantly, and manage your account presence dynamically.</T>
+        </p>
       </div>
 
-      <div className="space-y-6">
-        {/* 1. South African Localization & Currency preferences */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-5">
-          <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest flex items-center gap-2 pb-3 border-b border-gray-100">
-            <Globe className="text-indigo-600" size={18} />
-            Mzanzi Localization & Rand Settings
-          </h4>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Preferred local language */}
-            <div className="space-y-2">
-              <label className="text-xs font-black text-gray-600 uppercase tracking-wider block">Local Language (Official SA)</label>
-              <select
-                value={selectedLanguage}
-                onChange={(e) => {
-                  setSelectedLanguage(e.target.value);
-                  triggerToast(`App system language set to ${e.target.value}!`);
-                }}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-extrabold text-gray-900 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-300 transition-all cursor-pointer"
-              >
-                {localLanguages.map(lng => (
-                  <option key={lng} value={lng}>{lng}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Currency layout preference */}
-            <div className="space-y-2">
-              <label className="text-xs font-black text-gray-600 uppercase tracking-wider block">Rand Formatting Style</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrencyForm('symbol');
-                    triggerToast("Currency formatted to Standard Symbol format (e.g. R 450)");
-                  }}
-                  className={`py-3 rounded-xl text-xs font-extrabold border-2 transition-all cursor-pointer ${
-                    currencyForm === 'symbol'
-                      ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs'
-                      : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  R Symbol (R450)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrencyForm('code');
-                    triggerToast("Currency formatted to ISO Code format (e.g. 450 ZAR)");
-                  }}
-                  className={`py-3 rounded-xl text-xs font-extrabold border-2 transition-all cursor-pointer ${
-                    currencyForm === 'code'
-                      ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs'
-                      : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  ZAR Code (450 ZAR)
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 2. Frosted Glass visual theme toggle */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-            <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest flex items-center gap-2">
-              <Eye className="text-indigo-600" size={18} />
-              Visual Styling Prefs
+      <div className="space-y-4">
+        {/* Instant AI Translator System section */}
+        <div className="bg-white rounded-2xl p-6 border border-indigo-100 shadow-xs space-y-4">
+          <div className="space-y-1">
+            <h4 className="font-extrabold text-sm text-gray-900 flex items-center gap-2">
+              <Languages className="text-indigo-600 shrink-0" size={18} />
+              <T>AI Real-time Translator</T>
             </h4>
-            <span className="text-[10px] bg-amber-100 text-amber-800 font-black px-2 py-0.5 rounded-md uppercase">Cape Glass Effect</span>
-          </div>
-          
-          <div className="flex items-center justify-between gap-4">
-            <div className="space-y-1">
-              <h5 className="font-bold text-sm text-gray-900">Translucent Glassmorphic Mode</h5>
-              <p className="text-xs text-gray-500 font-medium leading-relaxed">
-                Applies an elegant frosted glass panel overlay with hardware-accelerated background blur for a futuristic translucent dashboard.
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={glassmorphic}
-                onChange={(e) => {
-                  setGlassmorphic(e.target.checked);
-                  triggerToast(e.target.checked ? "Dynamic Frosted Glass Layer activated!" : "Standard solid layouts restored.");
-                }}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-            </label>
-          </div>
-        </div>
-
-        {/* 3. National ID Home Affairs checking */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-          <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest flex items-center gap-2 pb-3 border-b border-gray-100">
-            <ShieldCheck className="text-indigo-600" size={18} />
-            South African Verification System (SAVS)
-          </h4>
-
-          <div className="space-y-3">
-            <div className="flex flex-col md:flex-row gap-3 items-center">
-              <div className="w-full relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-wider">SA ID</span>
-                <input
-                  type="text"
-                  maxLength={15}
-                  value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-16 pr-4 text-xs font-extrabold text-gray-950 tracking-widest outline-none focus:bg-white focus:border-indigo-600"
-                  placeholder="ID Number"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleToggleVerification}
-                className={`w-full md:w-auto px-5 py-3 rounded-xl text-xs font-bold whitespace-nowrap transition-all ease-in cursor-pointer flex items-center justify-center gap-1 leading-none ${
-                  idVerified 
-                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs' 
-                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                }`}
-              >
-                {idVerified ? '✓ ID Verified' : 'Verify via DHS'}
-              </button>
-            </div>
-            
-            <p className="text-[11px] text-gray-500 font-medium leading-relaxed">
-              Verifying your profile ID via DHS (Department of Home Affairs) unlocks higher daily biddings on national municipal building tenders, verified status badges on community freelance gigs, and trusted chat ratings.
+            <p className="text-xs text-gray-500 leading-relaxed">
+              <T>Select a preset region language, or type ANY language globally (e.g., Japanese, Greek, Sesotho, Swahili, Italian) to instantly re-translate the entire application client-side & server-side with Gemini AI.</T>
             </p>
           </div>
-        </div>
 
-        {/* 4. Notification preferences */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-          <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest flex items-center gap-2 pb-3 border-b border-gray-100">
-            <Bell className="text-indigo-600" size={18} />
-            Instant Mzanzi Notifications Setup
-          </h4>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="font-bold text-sm block text-gray-900">National Government Tenders</span>
-                <span className="text-xs text-gray-500 font-medium">Notify immediately whenever new multi-million Rand tenders are gazetted.</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
-                <input
-                  type="checkbox"
-                  checked={notifyTenders}
-                  onChange={(e) => {
-                    setNotifyTenders(e.target.checked);
-                    triggerToast(e.target.checked ? "Gov tender email alerts turned on!" : "Gov tender emails muted.");
-                  }}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-              </label>
+          {/* Quick preset switches */}
+          <div className="space-y-2">
+            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+              <T>Quick English & South African Regional Presets</T>
             </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="font-bold text-sm block text-gray-900">Local Handyman & Delivery Gigs</span>
-                <span className="text-xs text-gray-500 font-medium">Get phone alerts for immediate bakkie moves, plumbing repairs, or home installations.</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
-                <input
-                  type="checkbox"
-                  checked={notifyGigs}
-                  onChange={(e) => {
-                    setNotifyGigs(e.target.checked);
-                    triggerToast(e.target.checked ? "Freelance gig alerts enabled!" : "Gigs alerts muted.");
-                  }}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-              </label>
+            <div className="flex flex-wrap gap-1.5">
+              {presetLanguages.map((lang) => {
+                const isActive = language.toLowerCase() === lang.toLowerCase();
+                return (
+                  <button
+                    key={lang}
+                    onClick={() => handleTranslateImmediate(lang)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 cursor-pointer border ${
+                      isActive 
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs' 
+                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+                    }`}
+                  >
+                    {lang}
+                  </button>
+                );
+              })}
             </div>
+          </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="font-bold text-sm block text-gray-900">Technology & Corporate Fulltime Jobs</span>
-                <span className="text-xs text-gray-500 font-medium">Weekly digest for senior and intermediate engineering vacancies in Johannesburg, Cape Town, and Durban.</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
+          {/* Custom user translation box */}
+          <div className="pt-3 border-t border-gray-100 space-y-2.5">
+            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+              <T>Translate to any other language immediately</T>
+            </div>
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (customLanguage.trim()) {
+                  handleTranslateImmediate(customLanguage);
+                  setCustomLanguage('');
+                }
+              }}
+              className="flex items-center gap-2"
+            >
+              <div className="relative flex-grow">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                  <Globe size={14} />
+                </span>
                 <input
-                  type="checkbox"
-                  checked={notifyJobs}
-                  onChange={(e) => {
-                    setNotifyJobs(e.target.checked);
-                    triggerToast(e.target.checked ? "Job vacancies alerts enabled!" : "Job digest paused.");
-                  }}
-                  className="sr-only peer"
+                  type="text"
+                  value={customLanguage}
+                  onChange={(e) => setCustomLanguage(e.target.value)}
+                  placeholder="e.g. Japanese, Korean, Italian, Tshivenda, Xitsonga..."
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 pl-9 pr-3 text-xs text-gray-900 placeholder-gray-450 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-semibold"
                 />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-              </label>
+              </div>
+              <button
+                type="submit"
+                className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all text-white font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer shadow-xs whitespace-nowrap"
+              >
+                <T>Translate App</T>
+              </button>
+            </form>
+          </div>
+
+          <div className="bg-indigo-50/40 border border-indigo-100/50 rounded-xl p-3 flex items-start gap-2">
+            <div className="text-indigo-600 text-sm mt-0.5 animate-pulse">🌍</div>
+            <div className="text-[11px] text-indigo-900 leading-relaxed font-semibold">
+              <T>Current active language is set to</T> <span className="underline font-black">{language}</span>. <T>Any user interface buttons, card labels, and posted vacancy descriptions will be seamlessly translated onto this style.</T>
             </div>
           </div>
         </div>
 
-        {/* 5. Wallet support resetting & clear cache */}
-        <div className="bg-red-50/50 border border-red-200/60 rounded-3xl p-6 space-y-4">
-          <h4 className="text-sm font-black text-red-900 uppercase tracking-widest flex items-center gap-2 pb-3 border-b border-red-100">
-            <RefreshCcw className="text-red-600" size={18} />
-            Administrative System Control Center
-          </h4>
-
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <h5 className="font-bold text-sm text-red-900">Manage App Data & Wallet Balances</h5>
-              <p className="text-xs text-red-700/80 font-semibold leading-relaxed">
-                Start with a clean slate or restore realistic South African samples anytime. Resets your South African Coins wallet back to 150 Coins.
-              </p>
+        {/* Section 1: Offline Notifications */}
+        {!isGuest && (
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <h4 className="font-bold text-sm text-gray-900 flex items-center gap-2">
+                  {offlineNotifications ? (
+                    <Bell className="text-indigo-650 shrink-0" size={18} />
+                  ) : (
+                    <BellOff className="text-gray-400 shrink-0" size={18} />
+                  )}
+                  <T>Offline Notifications</T>
+                </h4>
+                <p className="text-xs text-gray-500 leading-relaxed max-w-sm">
+                  <T>Decide if you want to receive latest notifications and gig matching alerts from the app when your device is offline or working disconnected.</T>
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer select-none shrink-0 mt-0.5">
+                <input
+                  type="checkbox"
+                  id="offlineNotifToggle"
+                  checked={offlineNotifications}
+                  onChange={(e) => handleToggleOfflineNotifications(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
             </div>
-            
-            <div className="flex flex-wrap gap-2">
-              {onLoadSamples && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onLoadSamples();
-                    triggerToast("Seeded South African sample datasets successfully!");
-                  }}
-                  className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl whitespace-nowrap transition-all shadow-xs shrink-0 flex items-center gap-1.5 cursor-pointer"
-                >
-                  Load Sample Data
-                </button>
-              )}
+            <div className="pt-2 border-t border-gray-50 flex items-center gap-2">
+              <span className={`h-2 w-2 rounded-full ${offlineNotifications ? 'bg-indigo-500 animate-pulse' : 'bg-gray-300'}`} />
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                {offlineNotifications ? <T>Status: Enabled to queue notifications</T> : <T>Status: Notifications disabled offline</T>}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Section 2: Account Disable/Enable Toggle */}
+        {!isGuest && (
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <h4 className="font-bold text-sm text-gray-900 flex items-center gap-2">
+                  {accountStatus === 'active' ? (
+                    <UserCheck className="text-indigo-650 shrink-0" size={18} />
+                  ) : (
+                    <UserX className="text-amber-500 shrink-0" size={18} />
+                  )}
+                  <T>Account Status</T>
+                </h4>
+                <p className="text-xs text-gray-500 leading-relaxed max-w-sm">
+                  <T>Disable or enable your workspace profile instantly. While disabled, you are hidden from search engines and cannot bid on live projects or receive chats.</T>
+                </p>
+              </div>
+
+              <div className="shrink-0">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                  accountStatus === 'active' 
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' 
+                    : 'bg-amber-50 text-amber-700 border border-amber-150'
+                }`}>
+                  {accountStatus === 'active' ? <T>Enabled</T> : <T>Disabled</T>}
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="text-[11px] text-gray-400 font-medium">
+                {accountStatus === 'active' ? (
+                  <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                    ✓ <T>Your profile is fully searchable and visible in the South African workspace list.</T>
+                  </span>
+                ) : (
+                  <span className="text-amber-600 font-semibold flex items-center gap-1">
+                    ⚠ <T>Your profile is currently concealed from the main workspace stream.</T>
+                  </span>
+                )}
+              </div>
+
               <button
+                onClick={handleToggleAccountStatus}
                 type="button"
-                onClick={handleResetCoins}
-                className="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl whitespace-nowrap transition-all shadow-xs shrink-0 flex items-center gap-1.5 cursor-pointer"
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-xs whitespace-nowrap self-end sm:self-auto ${
+                  accountStatus === 'active'
+                    ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-750 hover:shadow-md'
+                }`}
               >
-                <RefreshCcw size={13} className="animate-spin-slow" />
-                Reset App Data
+                {accountStatus === 'active' ? <T>Disable Account</T> : <T>Enable Account</T>}
               </button>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Decorative Proudly South African stamp */}
-        <div className="flex justify-center items-center gap-2 text-[11px] font-extrabold text-gray-500 uppercase tracking-widest">
-          <Heart size={12} className="text-red-500 fill-red-500" />
-          Proudly Made in South Africa • TimeGig Mzanzi Gateway v2.8.2
-        </div>
+        {isGuest && (
+          <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 text-center space-y-4 shadow-xs">
+            <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto">
+              <Settings size={24} />
+            </div>
+            <div>
+              <h4 className="font-bold text-gray-900"><T>Account Settings Private</T></h4>
+              <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">
+                <T>You are currently viewing Mzanzi as a guest. Register an account to enable workspace configurations, notifications and profile control.</T>
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

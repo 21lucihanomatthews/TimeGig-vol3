@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Share, Download, Edit2, Trash2, X, CheckCircle, Play, Film, Image as ImageIcon, FolderOpen, Calendar, Info, Search } from 'lucide-react';
+import { Share, Download, Edit2, Trash2, X, CheckCircle, Play, Film, Image as ImageIcon, FolderOpen, Calendar, Info, Search, Lock } from 'lucide-react';
 import { GalleryItem } from '../types';
 
 interface GalleryViewProps {
   items: GalleryItem[];
   setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
+  isGuest?: boolean;
+  onSignUp?: () => void;
 }
 
-export function GalleryView({ items, setItems }: GalleryViewProps) {
+export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewProps) {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -163,18 +165,33 @@ export function GalleryView({ items, setItems }: GalleryViewProps) {
               <div 
                 key={item.id} 
                 className="group bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md hover:border-green-300 cursor-pointer flex flex-col transition-all relative"
-                onClick={() => openItem(item)}
+                onClick={() => {
+                  if (isGuest) {
+                    // Logic to show prompt or just lock
+                  } else {
+                    openItem(item);
+                  }
+                }}
               >
                 {/* Media frame */}
                 <div className="aspect-square bg-gray-50 w-full relative overflow-hidden flex items-center justify-center border-b border-gray-100">
                   {isVideo ? (
                     <div className="w-full h-full relative">
                       <video src={item.url} className="w-full h-full object-cover" preload="metadata" />
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/40 transition-colors">
-                        <div className="bg-green-600 text-white p-2.5 rounded-full shadow-lg transform group-hover:scale-110 transition-transform">
-                          <Play size={16} className="fill-white translate-x-0.5" />
+                      {!isGuest && (
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/40 transition-colors">
+                          <div className="bg-green-600 text-white p-2.5 rounded-full shadow-lg transform group-hover:scale-110 transition-transform">
+                            <Play size={16} className="fill-white translate-x-0.5" />
+                          </div>
                         </div>
-                      </div>
+                      )}
+                      {isGuest && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="bg-black/40 backdrop-blur-md p-3 rounded-full border border-white/20">
+                            <Lock size={24} className="text-white" />
+                          </div>
+                        </div>
+                      )}
                       <span className="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
                         <Film size={12} />
                         VIDEO
@@ -182,7 +199,19 @@ export function GalleryView({ items, setItems }: GalleryViewProps) {
                     </div>
                   ) : (
                     <div className="w-full h-full relative">
-                      <img src={item.url} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                      <img 
+                        src={item.url} 
+                        alt={item.title} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                        loading="lazy" 
+                      />
+                      {isGuest && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="bg-black/40 backdrop-blur-md p-3 rounded-full border border-white/20">
+                            <Lock size={24} className="text-white" />
+                          </div>
+                        </div>
+                      )}
                       <span className="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
                         <ImageIcon size={12} />
                         IMAGE
@@ -199,6 +228,12 @@ export function GalleryView({ items, setItems }: GalleryViewProps) {
                   <h4 className="text-gray-900 font-bold text-sm leading-tight line-clamp-2" title={item.title}>
                     {item.title}
                   </h4>
+                  {isGuest && (
+                    <div className="mt-2 text-[10px] font-black text-indigo-600 flex items-center gap-1">
+                      <Lock size={10} />
+                      PRIVATE VAULT
+                    </div>
+                  )}
                 </div>
               </div>
             );

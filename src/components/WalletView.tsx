@@ -20,6 +20,8 @@ import {
 interface WalletViewProps {
   coins: number;
   setCoins: (coins: number | ((prev: number) => number)) => void;
+  transactions: any[];
+  onAddTransaction: (tx: any) => void;
 }
 
 interface TopupPackage {
@@ -29,7 +31,7 @@ interface TopupPackage {
   expiry: string;
 }
 
-export function WalletView({ coins, setCoins }: WalletViewProps) {
+export function WalletView({ coins, setCoins, transactions, onAddTransaction }: WalletViewProps) {
   const [showTopupModal, setShowTopupModal] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<TopupPackage | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'bank' | 'paystack'>('bank');
@@ -42,29 +44,6 @@ export function WalletView({ coins, setCoins }: WalletViewProps) {
   // Success flow state
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Local storage transaction list
-  const [transactions, setTransactions] = useState<{
-    id: string;
-    type: 'deposit' | 'spend';
-    amount: number;
-    description: string;
-    date: string;
-    status: 'completed' | 'pending';
-  }[]>(() => {
-    const saved = localStorage.getItem('timegig_transactions');
-    if (saved) return JSON.parse(saved);
-    return [
-      {
-        id: 'tx-initial',
-        type: 'deposit',
-        amount: 150,
-        description: 'New account signup reward tokens',
-        date: '2026-05-21 12:00',
-        status: 'completed'
-      }
-    ];
-  });
 
   const topupPackages: TopupPackage[] = [
     { id: 'pkg-20', coins: 20, price: 'R5,00', expiry: '30 days' },
@@ -103,28 +82,37 @@ export function WalletView({ coins, setCoins }: WalletViewProps) {
 
     setIsSubmitting(true);
 
+    const priceZAR = selectedPackage.id === 'pkg-20' ? 5.00 
+                   : selectedPackage.id === 'pkg-50' ? 14.99 
+                   : selectedPackage.id === 'pkg-100' ? 24.99 
+                   : selectedPackage.id === 'pkg-200' ? 34.99 
+                   : selectedPackage.id === 'pkg-500' ? 55.99 
+                   : selectedPackage.id === 'pkg-1000' ? 149.55 
+                   : 0;
+
     // Simulate process
     setTimeout(() => {
       setIsSubmitting(false);
       setShowSuccessMessage(true);
 
-      // Add the package coins to local state
-      setCoins(prev => prev + selectedPackage.coins);
-
-      // Add transaction
+      // Create a pending Admin Payment
       const newTx = {
         id: `tx-${Date.now()}`,
+        userRef: 'usr-lucihano',
+        userName: 'Lucihano Matthews',
+        userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80',
+        coinsAmount: selectedPackage.coins,
+        priceZAR: priceZAR,
+        reference: `${selectedPackage.coins} coins`,
+        popUrl: popPreview || undefined,
+        date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+        status: 'pending' as const,
         type: 'deposit' as const,
         amount: selectedPackage.coins,
-        description: `Topup Package (${selectedPackage.coins} Coins - Ref: ${selectedPackage.coins} coins)`,
-        date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-        status: 'completed' as const // Marked completed for immediate use in preview, as we explain to users
+        description: `Refill Package: ${selectedPackage.coins} Coins`,
       };
 
-      const updatedTxs = [newTx, ...transactions];
-      setTransactions(updatedTxs);
-      localStorage.setItem('timegig_transactions', JSON.stringify(updatedTxs));
-
+      onAddTransaction(newTx);
     }, 1500);
   };
 
@@ -480,10 +468,10 @@ export function WalletView({ coins, setCoins }: WalletViewProps) {
                 <div className="space-y-2">
                   <h4 className="text-xl font-extrabold text-gray-900">Proof Submitted Successfully!</h4>
                   <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
-                     Matthews is reviewing your Capitec bank transfer for the <strong className="text-slate-800">{selectedPackage?.coins} Coins refill (${selectedPackage?.price})</strong> using reference <strong className="text-slate-800">"{selectedPackage?.coins} coins"</strong>.
+                     Your Capitec bank transfer receipt for <strong className="text-slate-800">{selectedPackage?.coins} Coins refill (${selectedPackage?.price})</strong> with reference <strong className="text-slate-800">"{selectedPackage?.coins} coins"</strong> is queued for admin review.
                   </p>
                   <div className="bg-emerald-50 text-emerald-800 p-4 rounded-2xl text-xs font-bold border border-emerald-200/50 max-w-md mx-auto mt-4 leading-normal">
-                    💡 <strong>Safe Testing/Preview Override:</strong> For review and testing convenience in this preview sandbox, your wallet balance has been **automatically credited** with the {selectedPackage?.coins} coins immediately!
+                    💡 <strong>Test Drive Admin Flow:</strong> To approve or reject this payment immediately, click **More (or your avatar photo) ➔ Admin Panel** in the top menu bar! You can see full accounting statistics there.
                   </div>
                 </div>
 

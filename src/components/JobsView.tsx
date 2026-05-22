@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Search as SearchIcon, MapPin, Coins, Calendar, Briefcase, ChevronRight, CheckCircle, AlertTriangle, PlusCircle, X } from 'lucide-react';
+import { Search as SearchIcon, MapPin, Coins, Calendar, Briefcase, ChevronRight, CheckCircle, AlertTriangle, PlusCircle, X, Lock } from 'lucide-react';
 import { Job } from '../types';
+import { T } from './TranslationProvider';
 
 interface JobsViewProps {
   jobs: Job[];
@@ -9,9 +10,11 @@ interface JobsViewProps {
   appliedJobIds: string[];
   onAddJob?: (job: Job) => void;
   onLoadSamples?: () => void;
+  isGuest?: boolean;
+  onSignUp?: () => void;
 }
 
-export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoadSamples }: JobsViewProps) {
+export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoadSamples, isGuest, onSignUp }: JobsViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedLocation, setSelectedLocation] = useState('All');
@@ -19,6 +22,7 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
   const [applyForm, setApplyForm] = useState({ name: '', email: '', pitch: '', portfolioLink: '' });
   const [isApplying, setIsApplying] = useState(false);
   const [applySuccess, setApplySuccess] = useState(false);
+  const [showGuestPrompt, setShowGuestPrompt] = useState(false);
 
   // Job creation state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -51,6 +55,10 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
   });
 
   const handleOpenApply = (job: Job) => {
+    if (isGuest) {
+       setShowGuestPrompt(true);
+       return;
+    }
     setSelectedJob(job);
     setApplySuccess(false);
     setApplyForm({ name: 'Lucihano Matthews', email: '21lucihanomatthews@gmail.com', pitch: '', portfolioLink: '' });
@@ -114,17 +122,23 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
       <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h3 className="text-xl font-bold text-gray-900 tracking-tight">Discover Latest Jobs</h3>
-            <p className="text-sm text-gray-500 mt-1">Find your next big opportunity and apply directly on the company portal.</p>
+            <h3 className="text-xl font-bold text-gray-900 tracking-tight"><T>Discover Latest Jobs</T></h3>
+            <p className="text-sm text-gray-500 mt-1"><T>Find your next big opportunity and apply directly on the company portal.</T></p>
           </div>
           {onAddJob && (
             <button
               type="button"
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => {
+                 if (isGuest) {
+                    setShowGuestPrompt(true);
+                 } else {
+                    setShowCreateModal(true);
+                 }
+              }}
               className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-xs px-4 py-3 rounded-xl cursor-pointer flex items-center gap-1.5 transition-all shadow-xs shrink-0"
             >
               <PlusCircle size={15} />
-              Post a Job
+              <T>Post a Job</T>
             </button>
           )}
         </div>
@@ -165,7 +179,7 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              {cat}
+              <T>{cat}</T>
             </button>
           ))}
         </div>
@@ -177,9 +191,9 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
           <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 p-8 space-y-4 shadow-xs">
             <Briefcase className="mx-auto text-gray-300" size={48} />
             <div className="space-y-1">
-              <h4 className="text-lg font-bold text-gray-800">No active job vacancies listed</h4>
+              <h4 className="text-lg font-bold text-gray-800"><T>No active job vacancies listed</T></h4>
               <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
-                Start by posting a corporate job opportunity, full-time search vacancy, or import South African sample configurations instantly.
+                <T>Start by posting a corporate job opportunity, full-time search vacancy, or import South African sample configurations instantly.</T>
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 justify-center items-center pt-2">
@@ -190,7 +204,7 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
                   className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-1.5 transition-all shadow-xs"
                 >
                   <PlusCircle size={14} />
-                  Post a Job Opportunity
+                  <T>Post a Job Opportunity</T>
                 </button>
               )}
               {onLoadSamples && (
@@ -199,7 +213,7 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
                   onClick={onLoadSamples}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all border border-gray-200"
                 >
-                  Load Sample Job Listings
+                  <T>Load Sample Job Listings</T>
                 </button>
               )}
             </div>
@@ -216,35 +230,42 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="bg-green-50 text-green-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                      {job.category}
+                      <T>{job.category}</T>
                     </span>
-                    <span className="text-xs text-gray-400 font-medium">{job.postedDate}</span>
+                    <span className="text-xs text-gray-400 font-medium"><T>{job.postedDate}</T></span>
                   </div>
                   <h4 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors">
-                    {job.title}
+                    <T>{job.title}</T>
                   </h4>
-                  <div className="text-sm font-medium text-gray-600">{job.company}</div>
-                  <p className="text-sm text-gray-500 line-clamp-2 max-w-xl">{job.description}</p>
+                  <div className="text-sm font-medium text-gray-600"><T>{job.company}</T></div>
+                  <p className="text-sm text-gray-500 line-clamp-2 max-w-xl"><T>{job.description}</T></p>
                   
                   <div className="flex flex-wrap gap-y-1 gap-x-4 pt-1 text-xs text-gray-500 font-medium">
                     <div className="flex items-center gap-1">
                       <MapPin size={14} className="text-gray-400" />
-                      {job.location}
+                      <T>{job.location}</T>
                     </div>
                     <div className="flex items-center gap-1 font-semibold text-emerald-600">
                       <Coins size={14} />
-                      {job.rate}
+                      <T>{job.rate}</T>
                     </div>
                   </div>
                 </div>
 
                 <div className="md:self-center flex flex-col items-stretch md:items-end gap-2 shrink-0">
-                  <button
-                    className="bg-green-600 text-white hover:bg-green-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-xs flex items-center justify-center gap-1.5"
-                  >
-                    View & Apply
-                    <ChevronRight size={16} />
-                  </button>
+                  {isGuest ? (
+                    <div className="bg-gray-100 text-gray-400 px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-dashed border-gray-200">
+                      <Lock size={14} />
+                      Apply Locked
+                    </div>
+                  ) : (
+                    <button
+                      className="bg-green-600 text-white hover:bg-green-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-xs flex items-center justify-center gap-1.5"
+                    >
+                      View & Apply
+                      <ChevronRight size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -314,6 +335,23 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
                     className="mt-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-5 py-2 rounded-xl text-xs transition-colors"
                   >
                     Close
+                  </button>
+                </div>
+              ) : isGuest ? (
+                <div className="pt-4 border-t border-gray-100 text-center space-y-4 py-4">
+                   <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl space-y-2">
+                     <Lock className="mx-auto text-indigo-500" size={24} />
+                     <h4 className="text-sm font-extrabold text-indigo-900 uppercase">Apply Feature Locked</h4>
+                     <p className="text-[11px] text-indigo-700 font-medium">To apply for this role and access the hire portal, you must register your personal profile first.</p>
+                   </div>
+                   <button
+                    onClick={() => {
+                      setSelectedJob(null);
+                      if (onSignUp) onSignUp();
+                    }}
+                    className="w-full py-4 rounded-xl font-bold text-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-md"
+                  >
+                    Sign Up to Apply
                   </button>
                 </div>
               ) : (
@@ -400,6 +438,35 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, onLoad
                 Activate Job Listing
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Guest Mode Prompt Overlay */}
+      {showGuestPrompt && (
+        <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">View-Only Mode</h3>
+            <p className="text-gray-600 text-sm mb-6">
+              You must register as a member to apply for jobs or view contact details. 
+            </p>
+            <div className="space-y-3">
+               <button 
+                 onClick={() => {
+                   setShowGuestPrompt(false);
+                   if (onSignUp) onSignUp();
+                 }}
+                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all"
+               >
+                 Sign Up Now
+               </button>
+               <button 
+                 onClick={() => setShowGuestPrompt(false)}
+                 className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition-colors"
+               >
+                 Cancel
+               </button>
+            </div>
           </div>
         </div>
       )}
