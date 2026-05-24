@@ -268,7 +268,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
       </div>
 
       {/* Chat Pane */}
-      <div className={`flex-grow flex flex-col bg-gray-50/30 backdrop-blur-md relative ${!selectedContactId ? 'hidden md:flex md:items-center md:justify-center' : 'flex'}`}>
+      <div className={`flex-grow min-w-0 w-full flex flex-col bg-gray-50/30 backdrop-blur-md relative ${!selectedContactId ? 'hidden md:flex md:items-center md:justify-center' : 'flex'}`}>
         
         {!selectedContactId ? (
           <div className="text-center p-8 z-10 rounded-3xl max-w-sm border border-gray-200 bg-white/90 shadow-lg m-4">
@@ -358,7 +358,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
             </div>
 
             {/* Input Area */}
-            <div className="bg-white/85 backdrop-blur-md p-2 md:p-3 flex flex-col shrink-0 z-10 border-t border-gray-200/80 relative">
+            <div className="bg-white/85 backdrop-blur-md p-2 pb-20 md:pb-3 md:p-3 flex flex-col shrink-0 z-10 border-t border-gray-200/80 relative">
               {showEmojiPicker && (
                 <div className="absolute bottom-full left-2 md:left-4 mb-2 bg-white rounded-2xl shadow-xl border border-gray-200 p-3 w-64 max-w-[calc(100vw-32px)] flex flex-wrap gap-2 z-50">
                    {['👍', '😂', '❤️', '🔥', '👏', '🙌', '🎉', '😢', '😍', '🤔', '😎', '✅', '❌', '👌', '🙏', '💯'].map(emoji => (
@@ -366,20 +366,6 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
                    ))}
                 </div>
               )}
-              
-              {/* Quick Emojis Row for ultra fast replies */}
-              <div className="flex gap-2 mb-2 px-1 text-sm justify-start md:justify-center overflow-x-auto no-scrollbar py-0.5 border-b border-gray-150/40">
-                {['👍', '😂', '❤️', '🔥', '👏', '🙏', '🎉', '💡', '✅'].map(emoji => (
-                  <button 
-                    key={emoji} 
-                    type="button" 
-                    onClick={() => addEmoji(emoji)} 
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-200/40 px-2.5 py-1 rounded-full text-base transition-transform hover:scale-110 active:scale-95 cursor-pointer text-center flex items-center justify-center min-w-[34px] h-[32px] shrink-0 font-medium"
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
               
               <div className="flex items-center gap-2">
                 <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-gray-550 hover:text-green-600 p-2 transition-colors rounded-full hover:bg-gray-100/60 cursor-pointer" aria-label="Add Emoji">
@@ -392,7 +378,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
                   <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*,video/*" className="hidden" />
                 </div>
                 
-                <form onSubmit={handleSend} className="flex-grow bg-gray-50 border border-gray-200/80 rounded-full flex items-center px-4 py-1.5 focus-within:bg-white focus-within:border-green-600/70 transition-all shadow-xs">
+                <form onSubmit={handleSend} className="flex-grow min-w-0 bg-gray-50 border border-gray-200/80 rounded-full flex items-center px-4 py-1.5 focus-within:bg-white focus-within:border-green-600/70 transition-all shadow-xs">
                   <input
                     type="text"
                     value={inputText}

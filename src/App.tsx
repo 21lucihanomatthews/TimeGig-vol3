@@ -604,7 +604,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className={`flex flex-col min-h-screen ${isAdmin ? "pt-24 bg-slate-50" : "pt-16"}`}
+            className={`flex flex-col ${activeTab === "chat" ? "h-screen overflow-hidden" : "min-h-screen"} ${isAdmin ? "pt-24 bg-slate-50" : "pt-16"}`}
           >
             {isAdmin ? (
               <>
@@ -831,7 +831,7 @@ export default function App() {
 
             {/* Main Content */}
             <main
-              className={`flex-grow w-full ${activeTab === "chat" ? "max-w-none p-0 h-[calc(100vh-64px)] overflow-hidden" : "max-w-7xl mx-auto p-4 pb-12"}`}
+              className={`flex-grow w-full flex flex-col ${activeTab === "chat" ? "max-w-none p-0 h-[calc(100vh-64px)] h-[calc(100dvh-64px)] overflow-hidden" : "max-w-7xl mx-auto p-4 pb-12"}`}
             >
               {accountStatus === "disabled" && (
                 <div className="mb-4 max-w-4xl mx-auto bg-amber-50 border border-amber-250/60 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs animate-in slide-in-from-top duration-200">
