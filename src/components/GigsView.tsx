@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Gig, GalleryItem } from '../types';
 import { T, useLanguage } from './TranslationProvider';
+import { CameraCapture } from './CameraCapture';
 
 interface GigsViewProps {
   gigs: Gig[];
@@ -68,8 +69,9 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
   // Apply State
   const [selectedGig, setSelectedGig] = useState<Gig | null>(null);
   const [applyStep, setApplyStep] = useState<'info' | 'capture' | 'success'>('info');
-  const [capturedLeft, setCapturedLeft] = useState(false);
-  const [capturedRight, setCapturedRight] = useState(false);
+  const [photoLeft, setPhotoLeft] = useState<string | null>(null);
+  const [photoRight, setPhotoRight] = useState<string | null>(null);
+  const [showCameraFor, setShowCameraFor] = useState<'left' | 'right' | null>(null);
 
   const filteredGigs = gigs.filter(gig => 
     gig.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -135,8 +137,6 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
     }
     setSelectedGig(gig);
     setApplyStep('info');
-    setCapturedLeft(false);
-    setCapturedRight(false);
   };
 
   const submitApplication = () => {
@@ -469,6 +469,17 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
               <button onClick={() => setSelectedGig(null)} className="absolute top-4 right-4 text-gray-400 bg-gray-100 rounded-full p-1.5"><X size={20}/></button>
             )}
 
+            {applyStep === 'capture' && showCameraFor && (
+              <CameraCapture 
+                label={showCameraFor === 'left' ? 'Turn Left' : 'Turn Right'}
+                onClose={() => setShowCameraFor(null)}
+                onCapture={(photo) => {
+                  if (showCameraFor === 'left') setPhotoLeft(photo);
+                  else setPhotoRight(photo);
+                  setShowCameraFor(null);
+                }}
+              />
+            )}
             {applyStep === 'info' && (
               <div className="space-y-5 text-center mt-4">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex flex-col items-center justify-center mx-auto text-green-600 mb-2">
@@ -492,20 +503,20 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
                 <p className="text-xs text-gray-500"><T>Follow the prompts to capture your face.</T></p>
                 
                 <div className="flex justify-center gap-4 py-4">
-                  <div className={`w-32 h-40 border-4 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all ${capturedLeft ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-gray-300 text-gray-400 hover:border-green-500'}`} onClick={() => setCapturedLeft(true)}>
-                    {capturedLeft ? <CheckCircle size={32} /> : <Camera size={24} />}
-                    <span className="text-xs font-bold mt-2">{capturedLeft ? <T>Captured!</T> : <T>Turn Left</T>}</span>
+                  <div className={`w-32 h-40 border-4 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all ${photoLeft ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-gray-300 text-gray-400 hover:border-green-500'}`} onClick={() => setShowCameraFor('left')}>
+                    {photoLeft ? <img src={photoLeft} className="w-full h-full object-cover rounded-xl" alt="Left" /> : <Camera size={24} />}
+                    {!photoLeft && <span className="text-xs font-bold mt-2"><T>Turn Left</T></span>}
                   </div>
-                  <div className={`w-32 h-40 border-4 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all ${capturedRight ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-gray-300 text-gray-400 hover:border-green-500'}`} onClick={() => setCapturedRight(true)}>
-                    {capturedRight ? <CheckCircle size={32} /> : <Camera size={24} />}
-                     <span className="text-xs font-bold mt-2">{capturedRight ? <T>Captured!</T> : <T>Turn Right</T>}</span>
+                  <div className={`w-32 h-40 border-4 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all ${photoRight ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-gray-300 text-gray-400 hover:border-green-500'}`} onClick={() => setShowCameraFor('right')}>
+                    {photoRight ? <img src={photoRight} className="w-full h-full object-cover rounded-xl" alt="Right" /> : <Camera size={24} />}
+                    {!photoRight && <span className="text-xs font-bold mt-2"><T>Turn Right</T></span>}
                   </div>
                 </div>
 
                 <button 
                   onClick={submitApplication}
-                  disabled={!capturedLeft || !capturedRight}
-                  className={`w-full font-bold py-3.5 rounded-xl transition-all ${capturedLeft && capturedRight ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-400'}`}
+                  disabled={!photoLeft || !photoRight}
+                  className={`w-full font-bold py-3.5 rounded-xl transition-all ${photoLeft && photoRight ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-400'}`}
                 >
                   <T>Apply Now</T>
                 </button>

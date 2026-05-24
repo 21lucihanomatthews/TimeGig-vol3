@@ -145,15 +145,13 @@ export function JobsView({ jobs, coins, onApply, appliedJobIds, onAddJob, isGues
         <div className="flex flex-col md:flex-row gap-3">
           <div className="relative flex-grow">
             <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <T>
-              <input
-                type="text"
-                placeholder="Search roles, skills or companies..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-gray-50 text-gray-900 pl-11 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 focus:bg-white transition-colors"
-              />
-            </T>
+            <input
+              type="text"
+              placeholder="Search roles, skills or companies..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-gray-50 text-gray-900 pl-11 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 focus:bg-white transition-colors"
+            />
           </div>
           <div className="flex gap-2">
             <select

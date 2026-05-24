@@ -3,6 +3,7 @@ import { Search, MoreVertical, Phone, Video, Send, Smile, Paperclip, ArrowLeft, 
 import { GalleryItem } from '../types';
 
 import { T, useLanguage } from './TranslationProvider';
+import { playNotificationSound } from '../utils/sound';
 
 interface ChatMessage {
   id: string;
@@ -140,6 +141,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
 
   const simulateReply = () => {
     if (!selectedContactId) return;
+    playNotificationSound();
     const replyMessage: ChatMessage = {
       id: (Date.now() + 1).toString(),
       text: 'Awe, got it! 👍 Let us link up later.',

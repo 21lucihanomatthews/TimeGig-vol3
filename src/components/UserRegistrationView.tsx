@@ -17,15 +17,14 @@ import { T } from './TranslationProvider';
 interface UserRegistrationViewProps {
   onComplete: (email: string) => void;
   onSkip: () => void;
-  onBackToCompany?: () => void;
 }
 
 export default function UserRegistrationView({ 
   onComplete, 
-  onSkip,
-  onBackToCompany
+  onSkip
 }: UserRegistrationViewProps) {
-  const [step, setStep] = useState(1); // 1: Signup Form, 2: PIN Verification
+  const [step, setStep] = useState(1); // 1: Signup/Login Form, 2: PIN Verification, 3: Congratulations
+  const [mode, setMode] = useState<'signup' | 'login'>('signup');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -36,25 +35,40 @@ export default function UserRegistrationView({
   const [pinError, setPinError] = useState("");
   const [showPinNotification, setShowPinNotification] = useState(false);
 
-  const handleSignupSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !acceptTerms) return;
 
-    setIsLoading(true);
-    
-    // Generate a random 4-pin
-    const newPin = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedPin(newPin);
+    if (mode === 'signup') {
+      if (!email || !password || !acceptTerms) return;
 
-    // Simulate network delay
-    setTimeout(() => {
-      setIsLoading(false);
-      setStep(2);
-      // Simulate receiving the code "from the app" as requested
+      setIsLoading(true);
+      
+      // Generate a random 4-pin
+      const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+      setGeneratedPin(newPin);
+
+      // Simulate network delay
       setTimeout(() => {
-        setShowPinNotification(true);
-      }, 1000);
-    }, 1500);
+        setIsLoading(false);
+        setStep(2);
+        // Simulate receiving the code "from the app" as requested
+        setTimeout(() => {
+          setShowPinNotification(true);
+        }, 1000);
+      }, 1500);
+    } else {
+      // Login mode
+      if (!email || !password) return;
+      setIsLoading(true);
+      
+      setTimeout(() => {
+        setIsLoading(false);
+        setStep(3);
+        setTimeout(() => {
+            onComplete(email);
+        }, 2000);
+      }, 1500);
+    }
   };
 
   const handlePinChange = (value: string, index: number) => {
@@ -131,10 +145,10 @@ export default function UserRegistrationView({
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
           <User size={48} className="mx-auto text-white mb-4" />
           <h1 className="text-3xl font-black text-white mb-2">
-            <T>User Signup</T>
+            <T>{mode === 'signup' ? 'User Signup' : 'User Login'}</T>
           </h1>
           <p className="text-indigo-200 text-sm">
-            <T>Create your local worker profile</T>
+            <T>{mode === 'signup' ? 'Create your local worker profile' : 'Welcome back to your local gig.'}</T>
           </p>
         </div>
 
@@ -145,7 +159,7 @@ export default function UserRegistrationView({
               animate={{ opacity: 1 }}
               className="space-y-6"
             >
-              <form onSubmit={handleSignupSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">
@@ -183,29 +197,31 @@ export default function UserRegistrationView({
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-1">
-                  <input
-                    id="terms"
-                    type="checkbox"
-                    checked={acceptTerms}
-                    onChange={(e) => setAcceptTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 accent-indigo-600"
-                    required
-                  />
-                  <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed cursor-pointer">
-                    <T>I accept the</T> <span className="text-indigo-600 font-bold underline cursor-pointer"><T>Terms and Conditions</T></span> <T>and understand that my identity will be vetted for trust and safety.</T>
-                  </label>
-                </div>
+                {mode === 'signup' && (
+                    <div className="flex items-start gap-3 p-1">
+                      <input
+                        id="terms"
+                        type="checkbox"
+                        checked={acceptTerms}
+                        onChange={(e) => setAcceptTerms(e.target.checked)}
+                        className="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 accent-indigo-600"
+                        required
+                      />
+                      <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed cursor-pointer">
+                        <T>I accept the</T> <span className="text-indigo-600 font-bold underline cursor-pointer"><T>Terms and Conditions</T></span> <T>and understand that my identity will be vetted for trust and safety.</T>
+                      </label>
+                    </div>
+                )}
 
                 <button
                   type="submit"
-                  disabled={isLoading || !acceptTerms}
+                  disabled={isLoading || (mode === 'signup' && !acceptTerms)}
                   className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white font-bold py-4 rounded-xl transition-all active:scale-95 shadow-md shadow-indigo-100 mt-2"
                 >
                   {isLoading ? (
                     <Loader2 className="animate-spin" size={20} />
                   ) : (
-                    <><T>Sign Up</T> <ArrowRight size={18} /></>
+                    <><T>{mode === 'signup' ? 'Sign Up' : 'Login'}</T> <ArrowRight size={18} /></>
                   )}
                 </button>
               </form>
@@ -213,25 +229,29 @@ export default function UserRegistrationView({
               <div className="flex flex-col gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={onBackToCompany}
+                  onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}
                   className="w-full text-indigo-600 font-bold text-xs uppercase tracking-wider py-2 hover:bg-indigo-50 rounded-lg transition-colors"
                 >
-                  <T>Switch to Company Portal</T>
+                  <T>{mode === 'signup' ? 'Already have an account? Login' : 'Need an account? Sign Up'}</T>
                 </button>
-                <div className="flex items-center gap-4 py-2">
-                  <div className="h-px flex-grow bg-gray-100"></div>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest"><T>Or</T></span>
-                  <div className="h-px flex-grow bg-gray-100"></div>
-                </div>
-                <button
-                  onClick={onSkip}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors text-sm"
-                >
-                  <T>Continue as Guest</T>
-                </button>
+                {mode === 'signup' && (
+                    <>
+                        <div className="flex items-center gap-4 py-2">
+                          <div className="h-px flex-grow bg-gray-100"></div>
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest"><T>Or</T></span>
+                          <div className="h-px flex-grow bg-gray-100"></div>
+                        </div>
+                        <button
+                          onClick={onSkip}
+                          className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors text-sm"
+                        >
+                          <T>Continue as Guest</T>
+                        </button>
+                    </>
+                )}
               </div>
             </motion.div>
-          ) : (
+          ) : step === 2 ? (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -284,6 +304,18 @@ export default function UserRegistrationView({
                   <ChevronLeft size={16} /> <T>Change Email</T>
                 </button>
               </div>
+            </motion.div>
+          ) : (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-6 text-center py-10"
+            >
+                <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto text-green-600">
+                    <CheckCircle size={48} />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900"><T>Congratulations!</T></h3>
+                <p className="text-gray-500"><T>You have successfully logged in.</T></p>
             </motion.div>
           )}
         </div>

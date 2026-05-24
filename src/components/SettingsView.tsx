@@ -32,6 +32,10 @@ export function SettingsView({
     return localStorage.getItem('timegig_offline_notifications') !== 'false';
   });
 
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    return localStorage.getItem('timegig_sound_enabled') !== 'false';
+  });
+
   // Account status state: 'active' or 'disabled'
   const [accountStatus, setAccountStatus] = useState(() => {
     return localStorage.getItem('timegig_account_status') || 'active';
@@ -55,6 +59,11 @@ export function SettingsView({
         ? translateOffline("Offline notifications enabled! You will receive updates of new projects and payments when disconnected.", "Afrikaans")
         : translateOffline("Offline notifications disabled.", "Afrikaans")
     );
+  };
+
+  const handleToggleSound = (checked: boolean) => {
+    setSoundEnabled(checked);
+    localStorage.setItem('timegig_sound_enabled', String(checked));
   };
 
   const handleToggleAccountStatus = () => {
@@ -218,6 +227,22 @@ export function SettingsView({
                 <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
               </label>
             </div>
+            
+            <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
+                <label className="text-xs font-bold text-gray-900">
+                    <T>Enable App Sounds</T>
+                </label>
+                <label className="relative inline-flex items-center cursor-pointer select-none">
+                    <input
+                        type="checkbox"
+                        checked={soundEnabled}
+                        onChange={(e) => handleToggleSound(e.target.checked)}
+                        className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+            </div>
+
             <div className="pt-2 border-t border-gray-50 flex items-center gap-2">
               <span className={`h-2 w-2 rounded-full ${offlineNotifications ? 'bg-indigo-500 animate-pulse' : 'bg-gray-300'}`} />
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">

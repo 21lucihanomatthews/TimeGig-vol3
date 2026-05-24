@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Briefcase,
@@ -26,6 +26,7 @@ import {
   Download,
   LogOut,
   Check,
+  Car,
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 import {
@@ -45,8 +46,38 @@ import { AdminDashboardView } from "./components/AdminDashboardView";
 import { T } from "./components/TranslationProvider";
 import CompanySignupView from "./components/CompanySignupView";
 import UserRegistrationView from "./components/UserRegistrationView";
+import { playClickSound } from "./utils/sound";
 
 export default function App() {
+  const topMenuRef = useRef<HTMLDivElement>(null);
+  const topMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const notificationsMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'BUTTON' || target.closest('button') || target.tagName === 'A' || target.closest('a')) {
+        playClickSound();
+      }
+    };
+    window.addEventListener('click', handleGlobalClick);
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (topMenuRef.current && !topMenuRef.current.contains(event.target as Node) && 
+          topMenuButtonRef.current && !topMenuButtonRef.current.contains(event.target as Node)) {
+        setShowTopMenu(false);
+      }
+      if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target as Node)) {
+        setShowNotificationsMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('click', handleGlobalClick);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   const [showSplash, setShowSplash] = useState(true);
   const [isRegistered, setIsRegistered] = useState(() => {
     return localStorage.getItem("timegig_company_registered") === "true";
@@ -56,7 +87,11 @@ export default function App() {
       localStorage.getItem("timegig_company_skipped_registration") === "true"
     );
   });
-  const [registrationType, setRegistrationType] = useState<"company" | "user">("user");
+  const [registrationType, setRegistrationType] = useState<"company" | "user">(() => {
+    const saved = localStorage.getItem("timegig_registration_type");
+    localStorage.removeItem("timegig_registration_type");
+    return (saved as "company" | "user") || "user";
+  });
   const isGuest = !isRegistered && hasSkippedRegistration;
   const [activeTab, setActiveTab] = useState("home");
   const [activeChatContactId, setActiveChatContactId] = useState<string | null>(
@@ -179,9 +214,15 @@ export default function App() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Clear legacy mock data
+    if (localStorage.getItem("timegig_users")) {
+      localStorage.removeItem("timegig_users");
+      setUsers([]);
+    }
+  }, []);
+
   const [users, setUsers] = useState<any[]>(() => {
-    const saved = localStorage.getItem("timegig_users");
-    if (saved) return JSON.parse(saved);
     return [];
   });
 
@@ -296,6 +337,7 @@ export default function App() {
     { name: "tenders", icon: Landmark, label: "Tenders" },
     { name: "gallery", icon: FolderOpen, label: "Gallery" },
     { name: "settings", icon: Settings, label: "Settings" },
+    { name: "company-signup", icon: Users, label: "Company Sign-up" },
     ...(isAdmin ? [{ name: "admin", icon: Shield, label: "Admin Panel" }] : []),
   ];
 
@@ -305,6 +347,8 @@ export default function App() {
   );
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
+
+  const [logo, setLogo] = useState<string | null>(() => localStorage.getItem("timegig_company_logo"));
 
   useEffect(() => {
     localStorage.setItem("timegig_profile_name", profileName);
@@ -508,7 +552,7 @@ export default function App() {
               <T>South Africa</T>
             </div>
           </motion.div>
-        ) : !isRegistered && !hasSkippedRegistration ? (
+        ) : !isRegistered && !isUserRegistered && !hasSkippedRegistration ? (
           <motion.div
             key="signup"
             initial={{ opacity: 0 }}
@@ -525,20 +569,29 @@ export default function App() {
                 onSkip={() => {
                   setHasSkippedRegistration(true);
                 }}
-                onSwitchType={() => setRegistrationType("user")}
               />
             ) : (
               <UserRegistrationView
                 onComplete={(email) => {
                   localStorage.setItem("timegig_profile_email", email);
-                  localStorage.setItem("timegig_company_registered", "true");
-                  setIsRegistered(true);
-                  // Auto-fill profile name if possible or let user complete it later
+                  localStorage.setItem("timegig_user_registered", "true");
+                  setIsUserRegistered(true);
+                  
+                  // Remember user in local registry
+                  const newUser = {
+                    id: `usr_${Date.now()}`,
+                    name: "Registered User",
+                    email,
+                    role: "Worker",
+                    online: true,
+                    coins: 10,
+                    lookingForJobs: true
+                  };
+                  setUsers((prev) => [newUser, ...prev]);
                 }}
                 onSkip={() => {
                   setHasSkippedRegistration(true);
                 }}
-                onBackToCompany={() => setRegistrationType("company")}
               />
             )}
           </motion.div>
@@ -602,13 +655,17 @@ export default function App() {
                         <ArrowLeft size={24} />
                       </button>
                     )}
+                    {logo && <img src={logo} className="w-8 h-8 rounded-lg object-cover" alt="Company Logo" />}
                     <div className="flex items-end gap-1.5">
-                      <button
+                      <motion.button
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 1, 0, 1, 1] }}
+                        transition={{ duration: 2.5, ease: "easeInOut", times: [0, 0.2, 0.4, 0.6, 1] }}
                         onClick={() => setActiveTab("home")}
                         className="text-xl font-black bg-gradient-to-r from-green-600 to-indigo-900 bg-clip-text text-transparent focus:outline-none hover:opacity-80 transition-opacity cursor-pointer"
                       >
                         <T>TimeGig</T>
-                      </button>
+                      </motion.button>
                       <div className="flex items-center gap-1 mb-1 bg-green-100 text-green-700 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">
                         <Shield size={10} />
                         <span><T>Verified Legit</T></span>
@@ -653,6 +710,7 @@ export default function App() {
                       <button
                         className={`rounded-full hover:bg-gray-100/55 flex items-center justify-center transition-colors relative ${profileImage ? "p-1" : "p-2"}`}
                         style={{ width: "40px", height: "40px" }}
+                        ref={topMenuButtonRef}
                         onClick={() => setShowTopMenu(!showTopMenu)}
                       >
                         {profileImage ? (
@@ -678,7 +736,7 @@ export default function App() {
                     )}
                   </div>
                   {showNotificationsMenu && (
-                    <div className="fixed top-16 right-16 mt-1 w-80 bg-white/95 backdrop-blur-md border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                    <div ref={notificationsMenuRef} className="fixed top-16 right-16 mt-1 w-80 bg-white/95 backdrop-blur-md border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
                       <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                         <h4 className="font-bold text-gray-900 text-sm">
                           <T>Notifications</T>
@@ -734,13 +792,21 @@ export default function App() {
                     </div>
                   )}
                   {showTopMenu && (
-                    <div className="fixed top-16 right-4 mt-1 w-48 bg-white/95 backdrop-blur-md border border-gray-200 rounded-lg shadow-lg z-50">
+                    <div ref={topMenuRef} className="fixed top-16 right-4 mt-1 w-48 bg-white/95 backdrop-blur-md border border-gray-200 rounded-lg shadow-lg z-50">
                       {topMenuItems.map((item) => (
                         <button
                           key={item.name}
                           onClick={() => {
-                            setActiveTab(item.name);
-                            setShowTopMenu(false);
+                            if (item.name === 'company-signup') {
+                              localStorage.setItem("timegig_registration_type", "company");
+                              localStorage.removeItem("timegig_company_registered");
+                              localStorage.removeItem("timegig_user_registered");
+                              localStorage.removeItem("timegig_company_skipped_registration");
+                              window.location.reload();
+                            } else {
+                              setActiveTab(item.name);
+                              setShowTopMenu(false);
+                            }
                           }}
                           className="flex items-center w-full px-4 py-2 hover:bg-gray-100"
                         >
@@ -1324,7 +1390,7 @@ export default function App() {
             {/* Bottom Navigation (Floating Cinematic Dock) */}
             {activeTab === "home" && !isAdmin && (
               <div className="fixed bottom-5 left-0 right-0 z-50 flex justify-center pointer-events-none px-4">
-                <nav className="pointer-events-auto h-14 bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 rounded-full px-2 flex justify-between items-center gap-1.5 shadow-[0_12px_35px_-6px_rgba(0,0,0,0.3)] max-w-[340px] w-full border-b-2 border-b-zinc-800/80">
+                <nav className="pointer-events-auto h-14 bg-gradient-to-r from-indigo-900/95 to-slate-900/95 backdrop-blur-xl border border-indigo-800/50 rounded-full px-2 flex justify-between items-center gap-1.5 shadow-[0_12px_35px_-6px_rgba(0,0,0,0.3)] max-w-[340px] w-full border-b-2 border-b-indigo-800/80">
                   {menuItems.map((item) => {
                     const isActive = activeTab === item.name;
                     return (
@@ -1335,7 +1401,7 @@ export default function App() {
                         className={`relative flex items-center justify-center gap-2 px-3.5 py-2 rounded-full cursor-pointer h-10 w-full transition-all duration-300 select-none outline-none ${
                           isActive
                             ? "text-green-400 font-extrabold"
-                            : "text-zinc-400 hover:text-zinc-100"
+                            : "text-zinc-200 hover:text-white"
                         }`}
                       >
                         {isActive && (

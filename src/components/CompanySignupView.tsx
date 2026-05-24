@@ -16,19 +16,22 @@ import { T } from './TranslationProvider';
 interface CompanySignupViewProps {
   onComplete: () => void;
   onSkip: () => void;
-  onSwitchType?: () => void;
 }
 
 export default function CompanySignupView({
   onComplete,
   onSkip,
-  onSwitchType,
 }: CompanySignupViewProps) {
   const [step, setStep] = useState(1); // 1: Landing, 2: Form, 3: Success/Failure
-  const [isLoginView, setIsLoginView] = useState(false);
+  const [isLoginView, setIsLoginView] = useState(() => {
+    const saved = localStorage.getItem("timegig_company_login_view") === "true";
+    localStorage.removeItem("timegig_company_login_view");
+    return saved;
+  });
   const [companyName, setCompanyName] = useState("");
   const [companyEmail, setCompanyEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [logo, setLogo] = useState<string | null>(null);
   const [documents, setDocuments] = useState<{ name: string; type: string }[]>(
     [],
   );
@@ -37,6 +40,18 @@ export default function CompanySignupView({
     "idle" | "checking" | "approved" | "declined"
   >("idle");
   const [isLoginLoading, setIsLoginLoading] = useState(false);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setLogo(event.target?.result as string);
+        localStorage.setItem("timegig_company_logo", event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,10 +163,14 @@ export default function CompanySignupView({
                   <T>Skip and Explore App</T>
                 </button>
                 <button
-                  onClick={onSwitchType}
-                  className="w-full text-indigo-600 font-bold text-[10px] uppercase tracking-wider py-2 hover:bg-indigo-50 rounded-lg transition-colors border border-dashed border-indigo-200"
+                  type="button"
+                  onClick={() => {
+                    localStorage.setItem("timegig_registration_type", "user");
+                    window.location.reload();
+                  }}
+                  className="w-full bg-transparent hover:bg-slate-100 text-slate-500 text-sm font-bold py-3 rounded-xl transition-colors"
                 >
-                  <T>Not a Company? Sign up as an Individual</T>
+                  <T>Back to User Account</T>
                 </button>
               </div>
             </motion.div>
@@ -255,6 +274,30 @@ export default function CompanySignupView({
 
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">
+                    <T>Company Logo</T>
+                  </label>
+                  <label className="flex items-center gap-4 p-3 bg-slate-50 border border-gray-200 rounded-xl cursor-pointer hover:border-indigo-500">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLogoUpload}
+                    />
+                    <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                      {logo ? (
+                        <img src={logo} alt="Logo" className="w-full h-full object-cover" />
+                      ) : (
+                        <UploadCloud className="text-gray-400" />
+                      )}
+                    </div>
+                    <span className="text-sm text-gray-600">
+                      <T>Upload logo</T>
+                    </span>
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">
                     <T>Upload Documents (Min. 2)</T>
                   </label>
 
@@ -315,11 +358,21 @@ export default function CompanySignupView({
                   <button
                     type="submit"
                     disabled={!companyName || documents.length < 2}
-                    className="bg-slate-900 hover:bg-slate-800 disabled:bg-gray-300 disabled:text-gray-500 text-white font-bold py-4 rounded-xl transition-all active:scale-95 shadow-md flex-grow"
+                    className="bg-slate-900 hover:bg-slate-800 disabled:bg-gray-300 disabled:text-gray-500 text-white font-bold py-4 rounded-xl transition-all active:scale-95 shadow-md shadow-slate-300 flex-grow"
                   >
                     <T>Submit Application</T>
                   </button>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.setItem("timegig_registration_type", "user");
+                    window.location.reload();
+                  }}
+                  className="w-full bg-transparent hover:bg-slate-100 text-slate-500 text-sm font-bold py-3 rounded-xl transition-colors"
+                >
+                  <T>Back to User Account</T>
+                </button>
               </form>
             </motion.div>
           )}
@@ -373,11 +426,23 @@ export default function CompanySignupView({
             >
               <CheckCircle size={64} className="mx-auto text-green-500 mb-4" />
               <h3 className="text-2xl font-black text-gray-900 mb-2">
-                <T>Application Approved!</T>
+                <T>Congratulations!</T>
               </h3>
-              <p className="text-sm text-gray-600 mb-8">
-                <T>Your company has been successfully vetted and registered. Final step: Complete your personal profile from the top right menu to become a fully verified user.</T>
+              <p className="text-sm text-gray-600 mb-6">
+                <T>Your company application has been approved. Welcome to the Mzansi TimeGig network!</T>
               </p>
+              
+              <div className="bg-indigo-50 p-5 rounded-2xl text-left border border-indigo-100 mb-8">
+                <h4 className="font-bold text-indigo-900 text-sm mb-3">
+                  <T>Next Steps:</T>
+                </h4>
+                <ul className="text-xs text-indigo-800 space-y-2 list-decimal pl-4 font-medium">
+                  <li><T>Complete your Company Profile in Settings.</T></li>
+                  <li><T>Post your first job or tender notice.</T></li>
+                  <li><T>Browse pro-worker gallery to find talent.</T></li>
+                </ul>
+              </div>
+
               <button
                 onClick={onComplete}
                 className="w-full flex justify-center items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl transition-all shadow-md shadow-green-200"
