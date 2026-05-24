@@ -1,23 +1,78 @@
 import React, { useState } from 'react';
-import { Landmark, Search as SearchIcon, Calendar, ChevronRight, CheckCircle, Download, ExternalLink, PlusCircle, X, Lock } from 'lucide-react';
+import { Landmark, Search as SearchIcon, Calendar, ChevronRight, CheckCircle, Download, ExternalLink, PlusCircle, X, Lock, RefreshCw, Globe, AlertTriangle } from 'lucide-react';
 import { Tender } from '../types';
 import { T, useLanguage } from './TranslationProvider';
 
 interface TendersViewProps {
   tenders: Tender[];
   onAddTender?: (tender: Tender) => void;
+  onAddTenders?: (tenders: Tender[]) => void;
   onLoadSamples?: () => void;
   isGuest?: boolean;
   onSignUp?: () => void;
 }
 
-export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSignUp }: TendersViewProps) {
+export function TendersView({ tenders, onAddTender, onAddTenders, onLoadSamples, isGuest, onSignUp }: TendersViewProps) {
   const { translateText, t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [applySuccess, setApplySuccess] = useState(false);
   const [showGuestPrompt, setShowGuestPrompt] = useState(false);
+
+  // Adzuna Tenders Integration States
+  const [showAdzunaModal, setShowAdzunaModal] = useState(false);
+  const [adzunaAppId, setAdzunaAppId] = useState(() => localStorage.getItem('timegig_adzuna_app_id') || '');
+  const [adzunaAppKey, setAdzunaAppKey] = useState(() => localStorage.getItem('timegig_adzuna_app_key') || '');
+  const [adzunaSyncing, setAdzunaSyncing] = useState(false);
+  const [adzunaSuccessCount, setAdzunaSuccessCount] = useState<number | null>(null);
+  const [adzunaError, setAdzunaError] = useState<string | null>(null);
+
+  const handleAdzunaImport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adzunaAppId.trim() || !adzunaAppKey.trim()) {
+      setAdzunaError("Please supply both your Adzuna App ID and API KEY credentials.");
+      return;
+    }
+
+    setAdzunaSyncing(true);
+    setAdzunaError(null);
+    setAdzunaSuccessCount(null);
+
+    // Save credentials
+    localStorage.setItem('timegig_adzuna_app_id', adzunaAppId.trim());
+    localStorage.setItem('timegig_adzuna_app_key', adzunaAppKey.trim());
+
+    try {
+      const queryParam = searchTerm.trim() || "Tender";
+      const targetUrl = `/api/adzuna/tenders?app_id=${encodeURIComponent(adzunaAppId.trim())}&app_key=${encodeURIComponent(adzunaAppKey.trim())}&what=${encodeURIComponent(queryParam)}`;
+      
+      const response = await fetch(targetUrl);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.error || `API returned status status ${response.status}`);
+      }
+
+      const data = await response.json();
+      const newTenders: Tender[] = data.tenders || [];
+
+      if (newTenders.length > 0) {
+        if (onAddTenders) {
+          onAddTenders(newTenders);
+        } else if (onAddTender) {
+          newTenders.forEach(t => onAddTender(t));
+        }
+        setAdzunaSuccessCount(newTenders.length);
+      } else {
+        setAdzunaError("No live tenders found matching search parameters in South Africa.");
+      }
+    } catch (err: any) {
+      console.error("Adzuna tenders sync error:", err);
+      setAdzunaError(err?.message || "Failed to contact South African Adzuna servers.");
+    } finally {
+      setAdzunaSyncing(false);
+    }
+  };
 
   // Custom tender creation states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -56,10 +111,14 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
     setNewTender({ title: '', department: '', value: '', description: '', closingDate: '', documentUrl: '' });
   };
 
-  const filteredTenders = tenders.filter(tender =>
-    tender.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    tender.department.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [maxDistance, setMaxDistance] = useState<number>(50);
+
+  const filteredTenders = tenders.filter(tender => {
+    const matchesSearch = tender.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          tender.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDistance = (tender.distance || 0) <= maxDistance;
+    return matchesSearch && matchesDistance;
+  });
 
   const handleOpenApply = (tender: Tender) => {
     if (isGuest) {
@@ -74,14 +133,20 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
     e.preventDefault();
     if (!selectedTender) return;
 
-    setIsApplying(true);
-    setTimeout(() => {
-      setIsApplying(false);
-      setApplySuccess(true);
-      if (selectedTender.documentUrl) {
-        window.open(selectedTender.documentUrl, '_blank', 'noopener,noreferrer');
+    // Process application status synchronously to bypass popup blocker
+    setApplySuccess(true);
+    
+    const tenderUrl = selectedTender.documentUrl || `https://www.adzuna.co.za/search?q=${encodeURIComponent(selectedTender.title + ' ' + selectedTender.department)}`;
+    try {
+      const targetWindow = window.open(tenderUrl, '_blank', 'noopener,noreferrer');
+      if (!targetWindow) {
+        // Fallback: Use direct navigation if popup block prevents opening new tab
+        window.location.href = tenderUrl;
       }
-    }, 1500);
+    } catch (err) {
+      console.warn("Auto-redirect blocked or failed:", err);
+      window.location.href = tenderUrl;
+    }
   };
 
   return (
@@ -92,33 +157,64 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
             <h3 className="text-xl font-bold text-gray-900 tracking-tight"><T>Government Tenders</T></h3>
             <p className="text-sm text-gray-500 mt-1"><T>Discover latest local and national government tenders and apply externally.</T></p>
           </div>
-          {onAddTender && (
+          <div className="flex gap-2 shrink-0">
             <button
               type="button"
               onClick={() => {
-                if (isGuest) {
-                  setShowGuestPrompt(true);
-                } else {
-                  setShowCreateModal(true);
-                }
+                setAdzunaSuccessCount(null);
+                setAdzunaError(null);
+                setShowAdzunaModal(true);
               }}
-              className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-xs px-4 py-3 rounded-xl cursor-pointer flex items-center gap-1.5 transition-all shadow-xs shrink-0"
+              className="bg-indigo-650 hover:bg-indigo-700 text-white font-extrabold text-xs px-4 py-3 rounded-xl cursor-pointer flex items-center gap-1.5 transition-all shadow-xs shrink-0"
             >
-              <PlusCircle size={15} />
-              <T>Gazette a Tender</T>
+              <RefreshCw size={14} className={adzunaSyncing ? "animate-spin" : ""} />
+              <T>Sync Adzuna</T>
             </button>
-          )}
+            {onAddTender && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (isGuest) {
+                    setShowGuestPrompt(true);
+                  } else {
+                    setShowCreateModal(true);
+                  }
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-xs px-4 py-3 rounded-xl cursor-pointer flex items-center gap-1.5 transition-all shadow-xs shrink-0"
+              >
+                <PlusCircle size={15} />
+                <T>Gazette a Tender</T>
+              </button>
+            )}
+          </div>
         </div>
         
-        <div className="relative">
-          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            placeholder={t("Search departments or notice titles...")}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-gray-50 text-gray-900 pl-11 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 transition-colors"
-          />
+        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+          <div className="relative mb-3">
+            <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="text"
+              placeholder={t("Search departments or notice titles...")}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-white text-gray-900 pl-11 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 transition-colors"
+            />
+          </div>
+          
+          {/* Distance Range Slider */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <label className="text-xs font-bold text-gray-700 whitespace-nowrap">
+              <T>Max Distance:</T> <span className="text-green-600 ml-1">{maxDistance} <T>miles</T></span>
+            </label>
+            <input 
+              type="range" 
+              min="1" 
+              max="100" 
+              value={maxDistance} 
+              onChange={(e) => setMaxDistance(parseInt(e.target.value))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+            />
+          </div>
         </div>
       </div>
 
@@ -170,6 +266,11 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
                   <div className="flex items-center gap-1 font-semibold text-green-600">
                     <T>Est. Value</T>: <T>{tender.value}</T>
                   </div>
+                  {tender.distance && (
+                    <div className="flex items-center gap-1 font-semibold text-indigo-600 bg-indigo-50 px-2 rounded">
+                      <T>Location Distance</T>: {tender.distance}m
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -390,6 +491,101 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
                  <T>Cancel</T>
                </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showAdzunaModal && (
+        <div className="fixed inset-0 z-[60] bg-slate-900/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-xs select-none animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 text-left">
+            <div className="p-4 border-b flex justify-between items-center bg-indigo-50/50 shrink-0">
+              <div className="flex items-center gap-1.5 text-indigo-950">
+                <Globe size={16} className="text-indigo-650 shrink-0" />
+                <h3 className="font-extrabold text-xs uppercase tracking-tight"><T>Adzuna SA Tenders Sync</T></h3>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowAdzunaModal(false)} 
+                className="bg-gray-100 hover:bg-gray-200 rounded-full p-1 border border-gray-200 text-gray-600 cursor-pointer"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAdzunaImport} className="p-4 sm:p-5 space-y-4">
+              <p className="text-[10px] text-gray-500 font-bold leading-normal">
+                <T>Connect your personal Adzuna Developer account to stream verified municipal and government tenders directly from South African publishers. If you don't have credentials, register at developer.adzuna.com.</T>
+              </p>
+
+              <div>
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1"><T>Adzuna App ID</T></label>
+                <input 
+                  required 
+                  type="text" 
+                  value={adzunaAppId} 
+                  onChange={e => setAdzunaAppId(e.target.value)} 
+                  className="w-full bg-slate-50 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-indigo-500 font-semibold text-slate-900" 
+                  placeholder="e.g. 1a2b3c4d" 
+                  style={{ color: "#090f1d", backgroundColor: "#f8fafc" }}
+                />
+              </div>
+
+              <div>
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1"><T>Adzuna API Key</T></label>
+                <input 
+                  required 
+                  type="password" 
+                  value={adzunaAppKey} 
+                  onChange={e => setAdzunaAppKey(e.target.value)} 
+                  className="w-full bg-slate-50 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-indigo-500 font-semibold text-slate-900" 
+                  placeholder="e.g. abc123xyz789..." 
+                  style={{ color: "#090f1d", backgroundColor: "#f8fafc" }}
+                />
+              </div>
+
+              {adzunaError && (
+                <div className="bg-red-50 p-3 rounded-xl flex items-start gap-2 text-red-700">
+                  <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                  <span className="text-[10px] font-bold leading-normal"><T>{adzunaError}</T></span>
+                </div>
+              )}
+
+              {adzunaSuccessCount !== null && (
+                <div className="bg-emerald-50 border border-emerald-150 p-3 rounded-xl flex items-start gap-2 text-emerald-700 animate-pulse">
+                  <CheckCircle size={14} className="shrink-0 mt-0.5" />
+                  <span className="text-[10px] font-bold leading-normal">
+                    <T>Successfully imported {adzunaSuccessCount} active tenders from South Africa!</T>
+                  </span>
+                </div>
+              )}
+
+              <div className="flex gap-2.5 pt-1.5 font-bold">
+                <button
+                  type="button"
+                  onClick={() => setShowAdzunaModal(false)}
+                  className="flex-1 bg-gray-100 hover:bg-slate-200 text-gray-500 font-bold py-2.5 rounded-xl text-[10px] uppercase tracking-wider transition-colors cursor-pointer text-center"
+                >
+                  <T>Cancel</T>
+                </button>
+                <button
+                  type="submit"
+                  disabled={adzunaSyncing}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-extrabold py-2.5 rounded-xl text-[10px] uppercase tracking-wider transition-all cursor-pointer flex justify-center items-center gap-1 shadow-md active:scale-98"
+                >
+                  {adzunaSyncing ? (
+                    <>
+                      <RefreshCw size={11} className="animate-spin" />
+                      <T>Syncing...</T>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw size={11} />
+                      <T>Connect Sync</T>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

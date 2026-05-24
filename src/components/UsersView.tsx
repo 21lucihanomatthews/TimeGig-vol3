@@ -48,7 +48,7 @@ const CATEGORIES = [
 ];
 
 function getCategoryForUser(user: UserProfile): string {
-  const text = `${user.role} ${user.skills.join(' ')} ${user.bio}`.toLowerCase();
+  const text = `${user.role || ''} ${(user.skills || []).join(' ')} ${user.bio || ''}`.toLowerCase();
   
   if (text.includes('inverter') || text.includes('wiring') || text.includes('solar') || text.includes('electric') || text.includes('distribution') || text.includes('board') || text.includes('voltage')) {
     return 'electrical';
@@ -94,7 +94,7 @@ export function UsersView({ onStartChat, users = [], isGuest, onSignUp }: UsersV
   });
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300">
+    <div className="w-full h-full max-w-none px-4 sm:px-6 md:px-8 lg:px-12 py-6 space-y-6 overflow-y-auto no-scrollbar animate-in fade-in duration-300">
       
       {/* Search and Category Filter Section */}
       <div className="bg-white/70 backdrop-blur-md rounded-3xl p-6 border border-gray-200/50 shadow-xs space-y-4">
@@ -178,7 +178,7 @@ export function UsersView({ onStartChat, users = [], isGuest, onSignUp }: UsersV
                 </div>
               </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {catUsers.map((user) => (
                   <UserCard key={user.id} user={user} isGuest={isGuest} onStartChat={() => {
                     if (isGuest) {

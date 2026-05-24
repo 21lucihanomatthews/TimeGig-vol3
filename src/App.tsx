@@ -34,6 +34,8 @@ import { supabase } from "./lib/supabaseClient";
 import {
   initialGigs,
   initialGalleryItems,
+  dummyJobs,
+  dummyTenders,
 } from "./data";
 import { Job, Tender, Gig, GalleryItem } from "./types";
 import { JobsView } from "./components/JobsView";
@@ -196,23 +198,84 @@ export default function App() {
 
   // Dynamic tables (fetched from Supabase)
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [appliedJobIds, setAppliedJobIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("timegig_applied_job_ids");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("timegig_applied_job_ids", JSON.stringify(appliedJobIds));
+  }, [appliedJobIds]);
+
   const [tenders, setTenders] = useState<Tender[]>([]);
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: jobsData } = await supabase.from('jobs').select('*');
-      if (jobsData) setJobs(jobsData);
+      try {
+        const { data: jobsData } = await supabase.from('jobs').select('*');
+        if (jobsData && jobsData.length > 0) {
+          setJobs(jobsData);
+        } else {
+          setJobs(dummyJobs);
+          const hasEnv = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+          if (hasEnv && jobsData) {
+            await supabase.from('jobs').insert(dummyJobs).catch(err => console.warn(err));
+          }
+        }
+      } catch (err) {
+        setJobs(dummyJobs);
+      }
       
-      const { data: tendersData } = await supabase.from('tenders').select('*');
-      if (tendersData) setTenders(tendersData);
+      try {
+        const { data: tendersData } = await supabase.from('tenders').select('*');
+        if (tendersData && tendersData.length > 0) {
+          setTenders(tendersData);
+        } else {
+          setTenders(dummyTenders);
+          const hasEnv = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+          if (hasEnv && tendersData) {
+            await supabase.from('tenders').insert(dummyTenders).catch(err => console.warn(err));
+          }
+        }
+      } catch (err) {
+        setTenders(dummyTenders);
+      }
       
-      const { data: gigsData } = await supabase.from('gigs').select('*');
-      if (gigsData) setGigs(gigsData);
+      try {
+        const { data: gigsData } = await supabase.from('gigs').select('*');
+        if (gigsData && gigsData.length > 0) {
+          setGigs(gigsData);
+        } else {
+          setGigs(initialGigs);
+          const hasEnv = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+          if (hasEnv && gigsData) {
+            await supabase.from('gigs').insert(initialGigs).catch(err => console.warn(err));
+          }
+        }
+      } catch (err) {
+        setGigs(initialGigs);
+      }
       
-      const { data: galleryData } = await supabase.from('gallery').select('*');
-      if (galleryData) setGalleryItems(galleryData);
+      try {
+        const { data: galleryData } = await supabase.from('gallery').select('*');
+        if (galleryData && galleryData.length > 0) {
+          setGalleryItems(galleryData);
+        } else {
+          setGalleryItems(initialGalleryItems);
+          const hasEnv = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+          if (hasEnv && galleryData) {
+            await supabase.from('gallery').insert(initialGalleryItems).catch(err => console.warn(err));
+          }
+        }
+      } catch (err) {
+        setGalleryItems(initialGalleryItems);
+      }
     };
     fetchData();
   }, []);
@@ -578,17 +641,29 @@ export default function App() {
                 onComplete={(email) => {
                   localStorage.setItem("timegig_profile_email", email);
                   localStorage.setItem("timegig_user_registered", "true");
+                  
+                  // Instantly update states so the selfie and metadata populate app-wide immediately
+                  const nameFromStorage = localStorage.getItem("timegig_profile_name") || "Registered User";
+                  const bioFromStorage = localStorage.getItem("timegig_profile_bio") || "Active local professional";
+                  const imageFromStorage = localStorage.getItem("timegig_profile_image") || null;
+
+                  setProfileName(nameFromStorage);
+                  setProfileEmail(email);
+                  setProfileBio(bioFromStorage);
+                  setProfileImage(imageFromStorage);
+
                   setIsUserRegistered(true);
                   
                   // Remember user in local registry
                   const newUser = {
                     id: `usr_${Date.now()}`,
-                    name: "Registered User",
+                    name: nameFromStorage,
                     email,
                     role: "Worker",
                     online: true,
                     coins: 10,
-                    lookingForJobs: true
+                    lookingForJobs: true,
+                    avatar: imageFromStorage || undefined
                   };
                   setUsers((prev) => [newUser, ...prev]);
                 }}
@@ -604,7 +679,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className={`flex flex-col ${activeTab === "chat" ? "h-screen overflow-hidden" : "min-h-screen"} ${isAdmin ? "pt-24 bg-slate-50" : "pt-16"}`}
+            className={`flex flex-col ${activeTab === "chat" || activeTab === "jobs" || activeTab === "users" ? "h-screen overflow-hidden" : "min-h-screen"} ${isAdmin ? "pt-24 bg-slate-50" : "pt-16"}`}
           >
             {isAdmin ? (
               <>
@@ -831,7 +906,7 @@ export default function App() {
 
             {/* Main Content */}
             <main
-              className={`flex-grow w-full flex flex-col ${activeTab === "chat" ? "max-w-none p-0 h-[calc(100vh-64px)] h-[calc(100dvh-64px)] overflow-hidden" : "max-w-7xl mx-auto p-4 pb-12"}`}
+              className={`flex-grow w-full flex flex-col ${activeTab === "chat" || activeTab === "users" || activeTab === "jobs" ? "max-w-none p-0 h-[calc(100vh-64px)] h-[calc(100dvh-64px)] overflow-hidden" : "max-w-7xl mx-auto p-4 pb-12"}`}
             >
               {accountStatus === "disabled" && (
                 <div className="mb-4 max-w-4xl mx-auto bg-amber-50 border border-amber-250/60 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs animate-in slide-in-from-top duration-200">
@@ -933,31 +1008,31 @@ export default function App() {
                   </div>
 
                   {/* Feature Launcher Grid */}
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-black tracking-widest text-gray-400 uppercase text-center sm:text-left">
+                  <div className="space-y-3">
+                    <h3 className="text-[10px] font-black tracking-widest text-gray-400 uppercase text-center sm:text-left">
                       <T>Activate Feature Modules</T>
                     </h3>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                       {/* 1. Jobs Card */}
                       <button
                         type="button"
                         onClick={() => setActiveTab("jobs")}
-                        className="bg-white border border-gray-150 hover:border-green-500/50 rounded-2xl p-5 text-left transition-all hover:shadow-md cursor-pointer group space-y-3"
+                        className="bg-white border border-gray-150 hover:border-green-500/50 rounded-xl p-3 flex items-start gap-2.5 text-left transition-all hover:shadow-sm cursor-pointer group"
                       >
-                        <div className="w-10 h-10 bg-green-50 text-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <Briefcase size={20} />
+                        <div className="w-8 h-8 shrink-0 bg-green-50 text-green-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Briefcase size={16} />
                         </div>
-                        <div>
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-extrabold text-base text-gray-950">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex justify-between items-center gap-1">
+                            <h4 className="font-extrabold text-xs text-gray-950 truncate">
                               <T>Jobs Portal</T>
                             </h4>
-                            <span className="text-[10px] font-black bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                            <span className="text-[8px] font-black bg-green-100 text-green-805 px-1.5 py-0.5 rounded-full shrink-0">
                               {jobs.length} <T>listed</T>
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                          <p className="text-[10px] text-gray-500 mt-0.5 leading-normal line-clamp-2">
                             <T>Search full-time & contracts or publish corporate job specs instantly.</T>
                           </p>
                         </div>
@@ -967,21 +1042,21 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => setActiveTab("gigs")}
-                        className="bg-white border border-gray-150 hover:border-yellow-500/50 rounded-2xl p-5 text-left transition-all hover:shadow-md cursor-pointer group space-y-3"
+                        className="bg-white border border-gray-150 hover:border-yellow-500/50 rounded-xl p-3 flex items-start gap-2.5 text-left transition-all hover:shadow-sm cursor-pointer group"
                       >
-                        <div className="w-10 h-10 bg-yellow-50 text-yellow-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <ClipboardList size={20} />
+                        <div className="w-8 h-8 shrink-0 bg-yellow-50 text-yellow-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <ClipboardList size={16} />
                         </div>
-                        <div>
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-extrabold text-base text-gray-950">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex justify-between items-center gap-1">
+                            <h4 className="font-extrabold text-xs text-gray-950 truncate">
                               <T>Handyman Gigs</T>
                             </h4>
-                            <span className="text-[10px] font-black bg-yellow-101 text-yellow-900 px-2 py-0.5 rounded-full">
+                            <span className="text-[8px] font-black bg-yellow-101 text-yellow-905 px-1.5 py-0.5 rounded-full shrink-0">
                               {gigs.length} <T>open</T>
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                          <p className="text-[10px] text-gray-500 mt-0.5 leading-normal line-clamp-2">
                             <T>Find local micro-jobs: repairs, moving flats, plumbing and mounting.</T>
                           </p>
                         </div>
@@ -991,21 +1066,21 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => setActiveTab("tenders")}
-                        className="bg-white border border-gray-150 hover:border-blue-500/50 rounded-2xl p-5 text-left transition-all hover:shadow-md cursor-pointer group space-y-3"
+                        className="bg-white border border-gray-150 hover:border-blue-500/50 rounded-xl p-3 flex items-start gap-2.5 text-left transition-all hover:shadow-sm cursor-pointer group"
                       >
-                        <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <Landmark size={20} />
+                        <div className="w-8 h-8 shrink-0 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Landmark size={16} />
                         </div>
-                        <div>
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-extrabold text-base text-gray-950">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex justify-between items-center gap-1">
+                            <h4 className="font-extrabold text-xs text-gray-950 truncate">
                               <T>Gov Tenders</T>
                             </h4>
-                            <span className="text-[10px] font-black bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                            <span className="text-[8px] font-black bg-blue-100 text-blue-805 px-1.5 py-0.5 rounded-full shrink-0">
                               {tenders.length} <T>active</T>
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                          <p className="text-[10px] text-gray-500 mt-0.5 leading-normal line-clamp-2">
                             <T>Browse official municipality contract tenders, gazettes & bid details.</T>
                           </p>
                         </div>
@@ -1022,24 +1097,24 @@ export default function App() {
                             setActiveTab("chat");
                           }
                         }}
-                        className={`bg-white border rounded-2xl p-5 text-left transition-all hover:shadow-md cursor-pointer group space-y-3 ${isGuest ? 'border-gray-150 opacity-60' : 'border-gray-150 hover:border-amber-500/50'}`}
+                        className={`bg-white border rounded-xl p-3 flex items-start gap-2.5 text-left transition-all hover:shadow-sm cursor-pointer group ${isGuest ? 'border-gray-150 opacity-60' : 'border-gray-150 hover:border-amber-500/50'}`}
                       >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform ${isGuest ? 'bg-gray-100 text-gray-400' : 'bg-amber-50 text-amber-600'}`}>
-                          <MessageSquare size={20} />
+                        <div className={`w-8 h-8 shrink-0 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform ${isGuest ? 'bg-gray-100 text-gray-400' : 'bg-amber-50 text-amber-600'}`}>
+                          <MessageSquare size={16} />
                         </div>
-                        <div>
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-extrabold text-base text-gray-950">
-                              Local Channels
+                        <div className="min-w-0 flex-1">
+                          <div className="flex justify-between items-center gap-1">
+                            <h4 className="font-extrabold text-xs text-gray-950 truncate">
+                              <T>Local Channels</T>
                             </h4>
                             {isGuest && (
-                              <span className="text-[10px] font-black bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                                LOCKED
+                              <span className="text-[8.5px] font-black bg-gray-100 text-gray-550 px-1.5 py-0.5 rounded-full shrink-0">
+                                <T>LOCKED</T>
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                            {isGuest ? 'Register to join local chatrooms and message service providers directly.' : 'Secure micro-chat and chatrooms with document upload integrations.'}
+                          <p className="text-[10px] text-gray-500 mt-0.5 leading-normal line-clamp-2">
+                            {isGuest ? <T>Register to join local chatrooms and message service providers directly.</T> : <T>Secure micro-chat and chatrooms with document upload integrations.</T>}
                           </p>
                         </div>
                       </button>
@@ -1048,23 +1123,22 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => setActiveTab("gallery")}
-                        className="bg-white border border-gray-150 hover:border-purple-500/50 rounded-2xl p-5 text-left transition-all hover:shadow-md cursor-pointer group space-y-3"
+                        className="bg-white border border-gray-150 hover:border-purple-500/50 rounded-xl p-3 flex items-start gap-2.5 text-left transition-all hover:shadow-sm cursor-pointer group"
                       >
-                        <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <FolderOpen size={20} />
+                        <div className="w-8 h-8 shrink-0 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <FolderOpen size={16} />
                         </div>
-                        <div>
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-extrabold text-base text-gray-950">
-                              Work Gallery
+                        <div className="min-w-0 flex-1">
+                          <div className="flex justify-between items-center gap-1">
+                            <h4 className="font-extrabold text-xs text-gray-950 truncate">
+                              <T>Work Gallery</T>
                             </h4>
-                            <span className="text-[10px] font-black bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
-                              {galleryItems.length} files
+                            <span className="text-[8px] font-black bg-purple-100 text-purple-805 px-1.5 py-0.5 rounded-full shrink-0">
+                              {galleryItems.length} <T>files</T>
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                            Secure workplace verification: upload certificates &
-                            licenses.
+                          <p className="text-[10px] text-gray-500 mt-0.5 leading-normal line-clamp-2">
+                            <T>Secure workplace verification: upload certificates & licenses.</T>
                           </p>
                         </div>
                       </button>
@@ -1080,22 +1154,22 @@ export default function App() {
                             setActiveTab("wallet");
                           }
                         }}
-                        className={`bg-white border rounded-2xl p-5 text-left transition-all hover:shadow-md cursor-pointer group space-y-3 ${isGuest ? 'border-gray-150 opacity-60' : 'border-gray-150 hover:border-indigo-500/50'}`}
+                        className={`bg-white border rounded-xl p-3 flex items-start gap-2.5 text-left transition-all hover:shadow-sm cursor-pointer group ${isGuest ? 'border-gray-150 opacity-60' : 'border-gray-150 hover:border-indigo-500/50'}`}
                       >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform ${isGuest ? 'bg-gray-100 text-gray-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                          <Wallet size={20} />
+                        <div className={`w-8 h-8 shrink-0 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform ${isGuest ? 'bg-gray-100 text-gray-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                          <Wallet size={16} />
                         </div>
-                        <div>
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-extrabold text-base text-gray-950">
-                              Coin Wallet
+                        <div className="min-w-0 flex-1">
+                          <div className="flex justify-between items-center gap-1">
+                            <h4 className="font-extrabold text-xs text-gray-950 truncate">
+                              <T>Coin Wallet</T>
                             </h4>
-                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${isGuest ? 'bg-gray-100 text-gray-500' : 'bg-indigo-100 text-indigo-900'}`}>
-                              {isGuest ? 'LOCKED' : `${coins} coins`}
+                            <span className={`text-[8.5px] font-black px-1.5 py-0.5 rounded-full shrink-0 ${isGuest ? 'bg-gray-100 text-gray-550' : 'bg-indigo-100 text-indigo-905'}`}>
+                              {isGuest ? <T>LOCKED</T> : `${coins}`}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                            {isGuest ? 'Only verified members can access the coin wallet and transaction history.' : 'Manage your tokens, top-up balance, Capitec deposits & transactions.'}
+                          <p className="text-[10px] text-gray-500 mt-0.5 leading-normal line-clamp-2">
+                            {isGuest ? <T>Only verified members can access the coin wallet and transaction history.</T> : <T>Manage your tokens, top-up balance, Capitec deposits & transactions.</T>}
                           </p>
                         </div>
                       </button>
@@ -1104,18 +1178,17 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => setActiveTab("profile")}
-                        className="bg-white border border-gray-150 hover:border-red-500/50 rounded-2xl p-5 text-left transition-all hover:shadow-md cursor-pointer group space-y-3"
+                        className="bg-white border border-gray-150 hover:border-red-500/50 rounded-xl p-3 flex items-start gap-2.5 text-left transition-all hover:shadow-sm cursor-pointer group"
                       >
-                        <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <User size={20} />
+                        <div className="w-8 h-8 shrink-0 bg-red-50 text-red-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <User size={16} />
                         </div>
-                        <div>
-                          <h4 className="font-extrabold text-base text-gray-950">
-                            User Profile
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-extrabold text-xs text-gray-950">
+                            <T>User Profile</T>
                           </h4>
-                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                            Configure job seeker CVs, personal biographies and
-                            upload avatar photos.
+                          <p className="text-[10px] text-gray-500 mt-0.5 leading-normal line-clamp-2">
+                            <T>Configure job seeker CVs, personal biographies and upload avatar photos.</T>
                           </p>
                         </div>
                       </button>
@@ -1124,16 +1197,16 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => setActiveTab("settings")}
-                        className="bg-white border border-gray-150 hover:border-slate-500/50 rounded-2xl p-5 text-left transition-all hover:shadow-md cursor-pointer group space-y-3 col-span-1 sm:col-span-2 md:col-span-1"
+                        className="bg-white border border-gray-150 hover:border-slate-500/50 rounded-xl p-3 flex items-start gap-2.5 text-left transition-all hover:shadow-sm cursor-pointer group"
                       >
-                        <div className="w-10 h-10 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <Settings size={20} />
+                        <div className="w-8 h-8 shrink-0 bg-slate-50 text-slate-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Settings size={16} />
                         </div>
-                        <div>
-                          <h4 className="font-extrabold text-base text-gray-950">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-extrabold text-xs text-gray-950">
                             <T>Settings</T>
                           </h4>
-                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                          <p className="text-[10px] text-gray-500 mt-0.5 leading-normal line-clamp-2">
                             <T>Adjust layout styling, glassmorphism UI toggles & cache resets.</T>
                           </p>
                         </div>
@@ -1171,9 +1244,25 @@ export default function App() {
                       />
                     </label>
                     <div className="text-center">
-                      <h3 className="font-bold text-lg">{profileName}</h3>
-                      <p className="text-gray-500 text-sm">
-                        {profileBio.substring(0, 30)}...
+                      <h3 className="font-bold text-lg flex items-center justify-center gap-1.5">
+                        <span>{profileName || "Registered Worker"}</span>
+                        {localStorage.getItem("timegig_profile_verified") === "true" && (
+                          <span 
+                            className="bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[9px] font-black uppercase px-2 py-0.5 rounded-full flex items-center gap-0.5" 
+                            title="Government-backed SA Identity Verified"
+                          >
+                            <Shield size={10} className="text-emerald-600 fill-emerald-50" />
+                            FICA Cleared
+                          </span>
+                        )}
+                      </h3>
+                      {localStorage.getItem("timegig_profile_id") && (
+                        <p className="text-[10px] text-gray-400 font-mono font-bold mt-0.5">
+                          RSA ID: {localStorage.getItem("timegig_profile_id")?.substring(0,6)}******{localStorage.getItem("timegig_profile_id")?.substring(12)} (Single Linked Device)
+                        </p>
+                      )}
+                      <p className="text-gray-500 text-sm mt-1">
+                        {profileBio ? profileBio.substring(0, 30) : "Active local professional"}...
                       </p>
                     </div>
                   </div>
@@ -1286,18 +1375,74 @@ export default function App() {
                 <JobsView
                   jobs={jobs}
                   coins={coins}
-                  onApply={() => {}}
-                  appliedJobIds={[]}
+                  onApply={(job) => {
+                    setCoins((curr) => Math.max(0, curr - job.coinsCost));
+                    setAppliedJobIds((prev) => [...new Set([...prev, job.id])]);
+                    const tx = {
+                      id: `tx_${Date.now()}`,
+                      userName: profileName || "Anonymous User",
+                      coinsAmount: -job.coinsCost,
+                      reference: `Applied: ${job.title}`,
+                      date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                      status: 'approved' as const,
+                      type: 'debit' as const,
+                      amount: -job.coinsCost,
+                      description: `Application Fee: ${job.title} at ${job.company}`,
+                    };
+                    setAdminPayments((prev) => [tx, ...prev]);
+                  }}
+                  appliedJobIds={appliedJobIds}
                   onAddJob={(newJob) => setJobs((prev) => [newJob, ...prev])}
+                  onAddJobs={async (newJobs) => {
+                    setJobs((prev) => {
+                      const existingIds = new Set(prev.map(j => j.id));
+                      const filteredNew = newJobs.filter(j => !existingIds.has(j.id));
+                      return [...filteredNew, ...prev];
+                    });
+                    try {
+                      const url = import.meta.env.VITE_SUPABASE_URL || '';
+                      const key = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+                      if (url && key) {
+                        await supabase.from('jobs').insert(newJobs);
+                      }
+                    } catch (err) {
+                      console.warn("Persisting Adzuna jobs to Supabase failed:", err);
+                    }
+                  }}
                   isGuest={isGuest}
                   onSignUp={() => setHasSkippedRegistration(false)}
                 />
               ) : activeTab === "tenders" ? (
                 <TendersView
                   tenders={tenders}
-                  onAddTender={(newTender) =>
-                    setTenders((prev) => [newTender, ...prev])
-                  }
+                  onAddTender={async (newTender) => {
+                    setTenders((prev) => [newTender, ...prev]);
+                    try {
+                      const url = import.meta.env.VITE_SUPABASE_URL || '';
+                      const key = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+                      if (url && key) {
+                        await supabase.from('tenders').insert(newTender);
+                      }
+                    } catch (err) {
+                      console.warn("Persisting single tender to Supabase failed:", err);
+                    }
+                  }}
+                  onAddTenders={async (newTenders) => {
+                    setTenders((prev) => {
+                      const existingIds = new Set(prev.map(t => t.id));
+                      const filteredNew = newTenders.filter(t => !existingIds.has(t.id));
+                      return [...filteredNew, ...prev];
+                    });
+                    try {
+                      const url = import.meta.env.VITE_SUPABASE_URL || '';
+                      const key = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+                      if (url && key) {
+                        await supabase.from('tenders').insert(newTenders);
+                      }
+                    } catch (err) {
+                      console.warn("Persisting Adzuna tenders to Supabase failed:", err);
+                    }
+                  }}
                   isGuest={isGuest}
                   onSignUp={() => setHasSkippedRegistration(false)}
                 />

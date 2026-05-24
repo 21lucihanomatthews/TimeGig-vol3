@@ -73,11 +73,16 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
   const [photoRight, setPhotoRight] = useState<string | null>(null);
   const [showCameraFor, setShowCameraFor] = useState<'left' | 'right' | null>(null);
 
-  const filteredGigs = gigs.filter(gig => 
-    gig.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    gig.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    gig.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Distance filter
+  const [maxDistance, setMaxDistance] = useState<number>(50);
+
+  const filteredGigs = gigs.filter(gig => {
+    const matchesSearch = gig.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          gig.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          gig.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDistance = (gig.distance || 0) <= maxDistance;
+    return matchesSearch && matchesDistance;
+  });
 
   const handleGigImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -306,16 +311,33 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
         </div>
       )}
 
-      <div className="relative">
-        <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-        <input
-          type="text"
-          placeholder={t("Search for odd jobs, tasks, or area...")}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 transition-colors shadow-xs font-semibold"
-          style={{ color: "#090f1d", backgroundColor: "#ffffff" }}
-        />
+      <div className="bg-white rounded-xl p-4 border border-gray-150 shadow-xs mb-4">
+        <div className="relative mb-4">
+          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <input
+            type="text"
+            placeholder={t("Search for odd jobs, tasks, or area...")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-green-500 transition-colors bg-gray-50 font-medium"
+            style={{ color: "#090f1d" }}
+          />
+        </div>
+        
+        {/* Distance Range Slider */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <label className="text-xs font-bold text-gray-700 whitespace-nowrap">
+            <T>Max Distance:</T> <span className="text-green-600 ml-1">{maxDistance} <T>miles</T></span>
+          </label>
+          <input 
+            type="range" 
+            min="1" 
+            max="100" 
+            value={maxDistance} 
+            onChange={(e) => setMaxDistance(parseInt(e.target.value))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+          />
+        </div>
       </div>
 
       {filteredGigs.length === 0 ? (
@@ -346,23 +368,31 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
               className="bg-white rounded-xl overflow-hidden border border-gray-150 shadow-xs flex flex-col hover:shadow-md hover:border-green-500/30 transition-all duration-300 cursor-pointer group"
             >
               {/* Square Image container like Facebook Marketplace */}
-              <div className="aspect-square w-full bg-gray-200 relative overflow-hidden">
+              <div className="aspect-square w-full bg-gray-200 relative overflow-hidden group-hover:shadow-[inset_0_0_20px_rgba(0,0,0,0.2)]">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
                 <img 
                   src={gig.imageUrl} 
                   alt={gig.title} 
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" 
                   referrerPolicy="no-referrer" 
                 />
+                <div className="absolute top-2 left-2 flex flex-col gap-1 z-20">
+                  <div className="bg-black/60 backdrop-blur-xs text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow-sm border border-white/10">
+                    <T>{gig.postedDate}</T>
+                  </div>
+                  {gig.distance && (
+                    <div className="bg-green-600/90 backdrop-blur-xs text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow-sm border border-white/10 animate-pulse flex items-center gap-0.5 w-fit">
+                      <MapPin size={8} /> {gig.distance}m
+                    </div>
+                  )}
+                </div>
                 {isGuest && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                     <div className="bg-black/30 backdrop-blur-md p-2.5 rounded-full border border-white/20">
                       <Lock size={20} className="text-white" />
                     </div>
                   </div>
                 )}
-                <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-xs text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded">
-                  <T>{gig.postedDate}</T>
-                </div>
               </div>
               
               {/* Product Information under image */}

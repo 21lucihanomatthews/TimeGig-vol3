@@ -7,6 +7,7 @@ export interface Gig {
   location: string;
   imageUrl: string;
   postedDate: string;
+  distance?: number;
 }
 
 export interface Job {
@@ -20,6 +21,8 @@ export interface Job {
   category: string;
   postedDate: string;
   coinsCost: number;
+  redirectUrl?: string;
+  distance?: number;
 }
 
 export interface Transaction {
@@ -40,6 +43,7 @@ export interface Tender {
   status: 'Open' | 'Closed' | 'Awarded';
   coinsCost: number;
   documentUrl?: string;
+  distance?: number;
 }
 
 export interface ChatMessage {
