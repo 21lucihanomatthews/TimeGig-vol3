@@ -27,6 +27,8 @@ import {
   LogOut,
   Check,
   Car,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 import {
@@ -107,6 +109,7 @@ export default function App() {
   const [showAdminPinModal, setShowAdminPinModal] = useState(false);
   const [adminPin, setAdminPin] = useState("");
   const [adminPinError, setAdminPinError] = useState("");
+  const [showAdminPin, setShowAdminPin] = useState(false);
 
   const [profileName, setProfileName] = useState(
     () => localStorage.getItem("timegig_profile_name") || "",
@@ -1562,6 +1565,7 @@ export default function App() {
                         setShowAdminPinModal(false);
                         setAdminPin("");
                         setAdminPinError("");
+                        setShowAdminPin(false);
                       }}
                       className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
                     >
@@ -1579,9 +1583,9 @@ export default function App() {
                         profile.
                       </p>
 
-                      <div className="pt-2">
+                      <div className="pt-2 relative">
                         <input
-                          type="password"
+                          type={showAdminPin ? "text" : "password"}
                           maxLength={4}
                           value={adminPin}
                           onChange={(e) => {
@@ -1589,8 +1593,15 @@ export default function App() {
                             setAdminPinError("");
                           }}
                           placeholder="Enter PIN"
-                          className="w-full bg-slate-50 border-2 border-slate-200 focus:border-indigo-600 rounded-xl p-4 text-center font-mono text-2xl tracking-[0.5em] outline-none transition-colors"
+                          className="w-full bg-slate-50 border-2 border-slate-200 focus:border-indigo-600 rounded-xl p-4 pr-12 text-center font-mono text-2xl tracking-[0.5em] outline-none transition-all"
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowAdminPin(!showAdminPin)}
+                          className="absolute right-4 top-[32px] text-gray-400 hover:text-indigo-600 focus:outline-none transition-colors"
+                        >
+                          {showAdminPin ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
                         {adminPinError && (
                           <p className="text-red-500 text-xs font-bold mt-2">
                             {adminPinError}

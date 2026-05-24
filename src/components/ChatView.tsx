@@ -58,7 +58,7 @@ const MOCK_MESSAGES: Record<string, ChatMessage[]> = {
 };
 
 export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, onSelectContact, isGuest, onSignUp }: ChatViewProps) {
-  const { translateText } = useLanguage();
+  const { translateText, t } = useLanguage();
   const [selectedContactId, setSelectedContactId] = useState<string | null>(initialContactId || null);
 
   useEffect(() => {
@@ -224,7 +224,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-600 transition-colors" size={18} />
             <input 
               type="text" 
-              placeholder={translateText("Search chats...")} 
+              placeholder={t("Search chats...")} 
               className="w-full bg-white text-gray-900 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none border border-gray-200/80 focus:border-green-600 focus:bg-white transition-all font-semibold shadow-xs"
             />
           </div>
@@ -397,7 +397,7 @@ export function ChatView({ onAddMediaToGallery, onCloseChat, initialContactId, o
                     type="text"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    placeholder={translateText("Type a message...")}
+                    placeholder={t("Type a message...")}
                     className="w-full bg-transparent outline-none border-none text-gray-900 text-sm placeholder-gray-400 font-medium"
                   />
                 </form>

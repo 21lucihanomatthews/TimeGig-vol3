@@ -30,7 +30,7 @@ interface GigsViewProps {
 }
 
 export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, isGuest, onSignUp }: GigsViewProps) {
-  const { translateText } = useLanguage();
+  const { translateText, t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   
   // Instruction Guide State (Persistent in local storage)
@@ -68,7 +68,7 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
 
   // Apply State
   const [selectedGig, setSelectedGig] = useState<Gig | null>(null);
-  const [applyStep, setApplyStep] = useState<'info' | 'capture' | 'success'>('info');
+  const [applyStep, setApplyStep] = useState<'details' | 'info' | 'capture' | 'success'>('details');
   const [photoLeft, setPhotoLeft] = useState<string | null>(null);
   const [photoRight, setPhotoRight] = useState<string | null>(null);
   const [showCameraFor, setShowCameraFor] = useState<'left' | 'right' | null>(null);
@@ -136,7 +136,7 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
        return;
     }
     setSelectedGig(gig);
-    setApplyStep('info');
+    setApplyStep('details');
   };
 
   const submitApplication = () => {
@@ -310,10 +310,11 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
         <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
         <input
           type="text"
-          placeholder={translateText("Search for odd jobs, tasks, or area...")}
+          placeholder={t("Search for odd jobs, tasks, or area...")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-white text-gray-900 pl-11 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 transition-colors shadow-xs"
+          className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 transition-colors shadow-xs font-semibold"
+          style={{ color: "#090f1d", backgroundColor: "#ffffff" }}
         />
       </div>
 
@@ -339,13 +340,17 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {filteredGigs.map((gig) => (
-            <div key={gig.id} className="bg-white rounded-xl overflow-hidden border border-gray-150 shadow-xs flex flex-col hover:shadow-xs hover:border-green-500/20 transition-all duration-300">
+            <div 
+              key={gig.id} 
+              onClick={() => handleApplyStart(gig)}
+              className="bg-white rounded-xl overflow-hidden border border-gray-150 shadow-xs flex flex-col hover:shadow-md hover:border-green-500/30 transition-all duration-300 cursor-pointer group"
+            >
               {/* Square Image container like Facebook Marketplace */}
               <div className="aspect-square w-full bg-gray-200 relative overflow-hidden">
                 <img 
                   src={gig.imageUrl} 
                   alt={gig.title} 
-                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
                   referrerPolicy="no-referrer" 
                 />
                 {isGuest && (
@@ -369,7 +374,7 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
                   </span>
                   
                   {/* Title under the price */}
-                  <h4 className="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-1 leading-snug mt-1" title={gig.title}>
+                  <h4 className="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-1 leading-snug mt-1 group-hover:text-green-600 transition-colors" title={gig.title}>
                     <T>{gig.title}</T>
                   </h4>
                   
@@ -391,8 +396,8 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
                   </div>
                 ) : (
                   <button 
-                    onClick={() => handleApplyStart(gig)}
-                    className="w-full bg-gray-900 hover:bg-green-600 text-white font-extrabold py-1.5 rounded-lg text-xs transition-colors shadow-xs cursor-pointer active:scale-95 shrink-0 mt-1"
+                    onClick={(e) => { e.stopPropagation(); handleApplyStart(gig); }}
+                    className="w-full bg-gray-900 group-hover:bg-green-600 text-white font-extrabold py-1.5 rounded-lg text-xs transition-colors shadow-xs cursor-pointer active:scale-95 shrink-0 mt-1"
                   >
                     <T>I Can Do This</T>
                   </button>
@@ -404,69 +409,180 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
       )}
 
       {/* Create Gig Modal */}
-      {showCreateGig && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative">
-            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg"><T>Post a New Gig</T></h3>
-              <button onClick={() => setShowCreateGig(false)} className="bg-gray-200 rounded-full p-1"><X size={18}/></button>
+      {showCreateGig && (() => {
+        let previewPrice = newGig.price.trim() || 'R0.00';
+        if (newGig.price.trim() && !previewPrice.startsWith('R')) {
+          previewPrice = `R ${previewPrice}`;
+        }
+        return (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/45 p-3 md:p-4 backdrop-blur-xs flex justify-center items-start md:items-center">
+            <div className="bg-white rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl relative my-4 md:my-0 border border-gray-150 animate-in fade-in slide-in-from-bottom-4 duration-200">
+              <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
+                  <h3 className="font-bold text-lg text-slate-900"><T>Post a New Gig</T></h3>
+                </div>
+                <button onClick={() => setShowCreateGig(false)} className="bg-gray-200 hover:bg-gray-300 rounded-full p-1.5 transition-colors cursor-pointer text-gray-700 shadow-xs"><X size={18}/></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-150">
+                
+                {/* Form Inputs */}
+                <form onSubmit={handleCreateGig} className="p-5 space-y-4 md:col-span-7 col-span-12">
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 block mb-1"><T>Gig Title</T></label>
+                    <input 
+                      required 
+                      type="text" 
+                      value={newGig.title} 
+                      onChange={e => setNewGig({...newGig, title: e.target.value})} 
+                      className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:ring-4 focus:ring-green-500/10 transition-all font-semibold" 
+                      placeholder={t("e.g., Help moving boxes")}
+                      style={{ color: "#090f1d", backgroundColor: "#ffffff" }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 block mb-1"><T>Description</T></label>
+                    <textarea 
+                      required 
+                      rows={3} 
+                      value={newGig.description} 
+                      onChange={e => setNewGig({...newGig, description: e.target.value})} 
+                      className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:ring-4 focus:ring-green-500/10 transition-all font-semibold" 
+                      placeholder={t("Describe the task...")}
+                      style={{ color: "#090f1d", backgroundColor: "#ffffff" }}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1"><T>Price Offer (Rand)</T></label>
+                      <input 
+                        required 
+                        type="text" 
+                        value={newGig.price} 
+                        onChange={e => setNewGig({...newGig, price: e.target.value})} 
+                        className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:ring-4 focus:ring-green-500/10 transition-all font-semibold" 
+                        placeholder={t("e.g. R450")}
+                        style={{ color: "#090f1d", backgroundColor: "#ffffff" }}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1"><T>Location</T></label>
+                      <input 
+                        required 
+                        type="text" 
+                        value={newGig.location} 
+                        onChange={e => setNewGig({...newGig, location: e.target.value})} 
+                        className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:ring-4 focus:ring-green-500/10 transition-all font-semibold" 
+                        placeholder={t("City or Area")}
+                        style={{ color: "#090f1d", backgroundColor: "#ffffff" }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                     <label className="text-xs font-bold text-gray-600 block mb-1"><T>Upload Photo from Device</T></label>
+                     <label className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:bg-gray-50 transition-colors flex flex-col items-center justify-center relative group min-h-[120px]">
+                       {newGig.imageUrl && !newGig.imageUrl.startsWith('https://images.unsplash.com') ? (
+                         <div className="relative w-full h-24 rounded-lg overflow-hidden">
+                           <img src={newGig.imageUrl} alt="Uploaded gig" className="w-full h-full object-cover" />
+                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                             <span className="text-xs text-white font-semibold"><T>Change Photo</T></span>
+                           </div>
+                         </div>
+                       ) : (
+                         <>
+                           <Camera className="mx-auto text-gray-400 mb-2 group-hover:text-green-600 transition-colors" size={24} />
+                           <span className="text-xs font-semibold text-gray-500"><T>Tap to select device picture</T></span>
+                           <span className="text-[10px] text-gray-400 mt-0.5"><T>Supports PNG, JPG, WEBP</T></span>
+                         </>
+                       )}
+                       <input 
+                         type="file" 
+                         accept="image/*" 
+                         className="hidden" 
+                         onChange={handleGigImageUpload} 
+                       />
+                     </label>
+                  </div>
+                  <button type="submit" className="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-colors cursor-pointer shadow-md"><T>Save & Publish Gig</T></button>
+                </form>
+
+                {/* Always-Visible Live Preview Column */}
+                <div className="md:col-span-5 col-span-12 bg-gray-50/70 p-5 flex flex-col justify-center items-center gap-4 transition-all select-none">
+                  <div className="w-full text-center">
+                    <span className="text-[10px] font-black tracking-wider uppercase text-green-700 bg-green-50 border border-green-100/60 px-2.5 py-1 rounded-full"><T>Live Card Preview</T></span>
+                  </div>
+                  
+                  {/* The Gig card box itself */}
+                  <div className="w-48 bg-white rounded-xl overflow-hidden border border-gray-150 shadow-md flex flex-col hover:shadow-lg transition-all duration-300 select-none">
+                    <div className="aspect-square w-full bg-gray-200 relative overflow-hidden">
+                      <img 
+                        src={newGig.imageUrl} 
+                        alt="Preview cover" 
+                        className="w-full h-full object-cover" 
+                        referrerPolicy="no-referrer" 
+                      />
+                      <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-xs text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded">
+                        <T>Just now</T>
+                      </div>
+                    </div>
+                    
+                    <div className="p-2.5 flex flex-col flex-grow justify-between gap-1.5">
+                      <div>
+                        {/* Price */}
+                        <span className="block font-black text-slate-950 text-sm leading-none">
+                          <T>{previewPrice}</T>
+                        </span>
+                        
+                        {/* Title */}
+                        <h4 className="text-xs font-semibold text-gray-805 line-clamp-1 leading-snug mt-1 text-left" title={newGig.title || 'Untitled Gig'}>
+                          <T>{newGig.title || 'Untitled Gig'}</T>
+                        </h4>
+
+                        {/* Description */}
+                        <p className="text-[10px] text-gray-550 line-clamp-2 mt-1 leading-normal text-left break-words bg-gray-50 p-1.5 rounded-lg border border-gray-150 font-medium" title={newGig.description || 'Task details...'}>
+                          <T>{newGig.description || 'Task details will show here...'}</T>
+                        </p>
+                        
+                        {/* Mini-details and Location */}
+                        <div className="flex flex-col gap-0.5 mt-1 text-[9px] text-gray-400 font-bold text-left">
+                          <span className="truncate">By Lucihano Matthews</span>
+                          <div className="flex items-center gap-0.5 text-gray-450 truncate">
+                            <MapPin size={9} className="text-gray-400 shrink-0" />
+                            <span className="truncate"><T>{newGig.location || 'City or Area'}</T></span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Button mockup */}
+                      <button 
+                        type="button" 
+                        className="w-full bg-gray-900 text-white font-extrabold py-1.5 rounded-lg text-[10px] transition-colors shrink-0 mt-1 cursor-not-allowed opacity-80"
+                        disabled
+                      >
+                        <T>I Can Do This</T>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <p className="text-[10px] text-gray-450 font-bold text-center">
+                    <T>This preview box automatically updates in real-time as you type!</T>
+                  </p>
+                </div>
+
+              </div>
             </div>
-            <form onSubmit={handleCreateGig} className="p-5 space-y-4">
-              <div>
-                <label className="text-xs font-bold text-gray-600 block mb-1"><T>Gig Title</T></label>
-                <input required type="text" value={newGig.title} onChange={e => setNewGig({...newGig, title: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("e.g., Help moving boxes")} />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-600 block mb-1"><T>Description</T></label>
-                <textarea required rows={3} value={newGig.description} onChange={e => setNewGig({...newGig, description: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("Describe the task...")} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1"><T>Price Offer (Rand)</T></label>
-                  <input required type="text" value={newGig.price} onChange={e => setNewGig({...newGig, price: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("e.g. R450")} />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1"><T>Location</T></label>
-                  <input required type="text" value={newGig.location} onChange={e => setNewGig({...newGig, location: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("City or Area")} />
-                </div>
-              </div>
-              <div>
-                 <label className="text-xs font-bold text-gray-600 block mb-1"><T>Upload Photo from Device</T></label>
-                 <label className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:bg-gray-50 transition-colors flex flex-col items-center justify-center relative group min-h-[120px]">
-                   {newGig.imageUrl && !newGig.imageUrl.startsWith('https://images.unsplash.com') ? (
-                     <div className="relative w-full h-24 rounded-lg overflow-hidden">
-                       <img src={newGig.imageUrl} alt="Uploaded gig" className="w-full h-full object-cover" />
-                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                         <span className="text-xs text-white font-semibold"><T>Change Photo</T></span>
-                       </div>
-                     </div>
-                   ) : (
-                     <>
-                       <Camera className="mx-auto text-gray-400 mb-2 group-hover:text-green-600 transition-colors" size={24} />
-                       <span className="text-xs font-semibold text-gray-500"><T>Tap to select device picture</T></span>
-                       <span className="text-[10px] text-gray-400 mt-0.5"><T>Supports PNG, JPG, WEBP</T></span>
-                     </>
-                   )}
-                   <input 
-                     type="file" 
-                     accept="image/*" 
-                     className="hidden" 
-                     onChange={handleGigImageUpload} 
-                   />
-                 </label>
-              </div>
-              <button type="submit" className="w-full bg-green-600 text-white font-bold py-3 rounded-xl mt-2 hover:bg-green-700"><T>Save & Publish Gig</T></button>
-            </form>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Apply to Gig Modal */}
       {selectedGig && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 flex flex-col justify-end md:items-center md:justify-center md:p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-t-3xl md:rounded-3xl w-full max-w-sm overflow-hidden p-6 relative pb-10 md:pb-6">
+          <div className={`bg-white rounded-t-3xl md:rounded-3xl w-full transition-all duration-300 overflow-hidden p-6 relative pb-10 md:pb-6 ${
+            applyStep === 'details' ? 'max-w-md md:max-w-lg' : 'max-w-sm'
+          }`}>
             {applyStep !== 'success' && (
-              <button onClick={() => setSelectedGig(null)} className="absolute top-4 right-4 text-gray-400 bg-gray-100 rounded-full p-1.5"><X size={20}/></button>
+              <button onClick={() => setSelectedGig(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-650 bg-gray-100/80 hover:bg-gray-200 transition-colors rounded-full p-1.5 z-10 cursor-pointer"><X size={20}/></button>
             )}
 
             {applyStep === 'capture' && showCameraFor && (
@@ -480,6 +596,97 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
                 }}
               />
             )}
+
+            {applyStep === 'details' && (
+              <div className="space-y-4 text-left animate-in fade-in duration-200">
+                {/* Header title */}
+                <div className="border-b pb-3 mb-2">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-green-600 bg-green-50 border border-green-150 px-2.5 py-1 rounded-md">
+                    <T>Local Gig Opportunities</T>
+                  </span>
+                  <h3 className="text-xl font-bold text-gray-900 mt-2 leading-snug"><T>{selectedGig.title}</T></h3>
+                </div>
+
+                {/* Cover Photo */}
+                <div className="aspect-video w-full rounded-xl overflow-hidden bg-gray-150 border border-gray-150 relative">
+                  <img
+                    src={selectedGig.imageUrl}
+                    alt={selectedGig.title}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-xs text-white text-xs font-black px-3 py-1.5 rounded-lg border border-white/20">
+                    <T>{selectedGig.price}</T>
+                  </div>
+                </div>
+
+                {/* Info row */}
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="bg-gray-50 border border-gray-150 p-2.5 rounded-xl flex items-center gap-2">
+                    <MapPin size={16} className="text-green-600 shrink-0" />
+                    <div className="min-w-0">
+                      <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider"><T>Location</T></span>
+                      <span className="font-extrabold text-slate-800 block truncate"><T>{selectedGig.location}</T></span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-150 p-2.5 rounded-xl flex items-center gap-2">
+                    <Shield size={16} className="text-indigo-600 shrink-0" />
+                    <div className="min-w-0">
+                      <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider"><T>Posted Date</T></span>
+                      <span className="font-extrabold text-slate-800 block truncate"><T>{selectedGig.postedDate}</T></span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description Segment */}
+                <div className="space-y-1.5 bg-gray-50/50 p-3 rounded-xl border border-gray-150/60">
+                  <span className="text-[10px] font-black text-gray-450 uppercase tracking-widest block"><T>Description</T></span>
+                  <p className="text-sm text-gray-700 font-semibold leading-relaxed break-words whitespace-pre-line max-h-40 overflow-y-auto pr-1">
+                    <T>{selectedGig.description}</T>
+                  </p>
+                </div>
+
+                {/* Poster info */}
+                <div className="flex items-center justify-between border-t border-b py-3 text-xs text-gray-500 font-bold bg-gray-50/20 px-1 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-green-600 to-emerald-500 text-white flex items-center justify-center font-black uppercase shadow-xs shrink-0">
+                      {selectedGig.creatorName.charAt(0)}
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-gray-400 uppercase font-black"><T>Posted By</T></span>
+                      <span className="font-bold text-slate-800 text-sm"><T>{selectedGig.creatorName}</T></span>
+                    </div>
+                  </div>
+
+                  <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-150 px-2 py-0.5 rounded-full shrink-0"><T>Verified Issuer</T></span>
+                </div>
+
+                {/* Trust and Safety callout */}
+                <p className="text-[10px] text-gray-400 leading-snug font-semibold">
+                  💡 <T>Note: To secure contracts and build community trust, applying for this gig requires quick identity verification steps (live Left-face and Right-face photo capture).</T>
+                </p>
+
+                {/* Bottom prompt action */}
+                <div className="flex gap-2.5 pt-2">
+                  <button 
+                    type="button"
+                    onClick={() => setSelectedGig(null)} 
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 text-gray-800 transition-colors font-extrabold py-3 rounded-xl text-center text-sm cursor-pointer border border-gray-200"
+                  >
+                    <T>Cancel</T>
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setApplyStep('info')} 
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white transition-all hover:shadow-md font-extrabold py-3 rounded-xl text-center text-sm cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <span><T>I Can Do This</T></span>
+                    <Sparkles size={14} className="animate-pulse" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             {applyStep === 'info' && (
               <div className="space-y-5 text-center mt-4">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex flex-col items-center justify-center mx-auto text-green-600 mb-2">
@@ -491,7 +698,7 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
                   <T>You will also need to capture two live pictures (Turn Left & Turn Right) for identity verification.</T>
                 </p>
                 <div className="flex gap-3 pt-4">
-                  <button onClick={() => setSelectedGig(null)} className="flex-1 bg-gray-200 text-gray-800 font-bold py-3 rounded-xl"><T>Cancel</T></button>
+                  <button onClick={() => setApplyStep('details')} className="flex-1 bg-gray-200 text-gray-800 font-bold py-3 rounded-xl"><T>Back to Gig</T></button>
                   <button onClick={() => setApplyStep('capture')} className="flex-1 bg-green-600 text-white font-bold py-3 rounded-xl"><T>Agree & Continue</T></button>
                 </div>
               </div>
@@ -516,7 +723,7 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
                 <button 
                   onClick={submitApplication}
                   disabled={!photoLeft || !photoRight}
-                  className={`w-full font-bold py-3.5 rounded-xl transition-all ${photoLeft && photoRight ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-400'}`}
+                  className={`w-full font-bold py-3.5 rounded-xl transition-all ${photoLeft && photoRight ? 'bg-green-600 text-white cursor-pointer hover:bg-green-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                 >
                   <T>Apply Now</T>
                 </button>
@@ -532,7 +739,7 @@ export function GigsView({ gigs, onAddGig, onAddMediaToGallery, onLoadSamples, i
                 <p className="text-sm text-gray-600"><T>Your application has been sent securely. You can chat with the creator if they accept!</T></p>
                 <button 
                   onClick={() => setSelectedGig(null)} 
-                  className="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl mt-4"
+                  className="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl mt-4 cursor-pointer hover:bg-green-700"
                 >
                   <T>Back to Gigs</T>
                 </button>

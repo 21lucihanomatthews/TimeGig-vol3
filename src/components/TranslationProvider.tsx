@@ -848,12 +848,14 @@ interface TranslationContextType {
   language: string;
   setLanguage: (lang: string) => void;
   translateText: (text: string) => Promise<string>;
+  t: (text: string) => string;
 }
 
 const TranslationContext = createContext<TranslationContextType>({
   language: 'English',
   setLanguage: () => {},
   translateText: async (text) => text,
+  t: (text) => text,
 });
 
 export function translateOffline(text: string, lang: string): string {
@@ -976,8 +978,12 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
     return offlineVal;
   };
 
+  const t = (text: string): string => {
+    return translateOffline(text, language);
+  };
+
   return (
-    <TranslationContext.Provider value={{ language, setLanguage, translateText }}>
+    <TranslationContext.Provider value={{ language, setLanguage, translateText, t }}>
       {children}
     </TranslationContext.Provider>
   );

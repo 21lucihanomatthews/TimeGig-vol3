@@ -73,7 +73,7 @@ interface UsersViewProps {
 }
 
 export function UsersView({ onStartChat, users = [], isGuest, onSignUp }: UsersViewProps) {
-  const { translateText } = useLanguage();
+  const { translateText, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showGuestPrompt, setShowGuestPrompt] = useState(false);
@@ -103,7 +103,7 @@ export function UsersView({ onStartChat, users = [], isGuest, onSignUp }: UsersV
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-600 transition-colors" size={20} />
             <input
               type="text"
-              placeholder={translateText("Search certified professionals, handymen, skills...")}
+              placeholder={t("Search certified professionals, handymen, skills...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-gray-50 text-gray-950 rounded-2xl py-3.5 pl-11 pr-4 text-sm outline-none border border-gray-200/80 focus:border-green-600/70 focus:bg-white transition-all font-semibold shadow-xs"

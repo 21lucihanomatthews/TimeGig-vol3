@@ -9,6 +9,8 @@ import {
   FileText,
   X,
   ShieldCheck,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 import { T } from './TranslationProvider';
@@ -31,6 +33,7 @@ export default function CompanySignupView({
   const [companyName, setCompanyName] = useState("");
   const [companyEmail, setCompanyEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [logo, setLogo] = useState<string | null>(null);
   const [documents, setDocuments] = useState<{ name: string; type: string }[]>(
     [],
@@ -205,14 +208,23 @@ export default function CompanySignupView({
                   <label className="block text-sm font-bold text-gray-700 mb-1">
                     <T>Password</T>
                   </label>
+                  <div className="relative">
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 font-medium"
+                      className="w-full p-3 pr-12 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 font-medium"
                       placeholder="••••••••"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600 focus:outline-none transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-3 pt-2">

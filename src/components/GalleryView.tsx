@@ -12,7 +12,7 @@ interface GalleryViewProps {
 }
 
 export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewProps) {
-  const { translateText } = useLanguage();
+  const { translateText, t } = useLanguage();
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -126,7 +126,7 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-green-600 transition-colors" size={18} />
           <input
             type="text"
-            placeholder={translateText("Search gallery by title or tag name...")}
+            placeholder={t("Search gallery by title or tag name...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-sm font-semibold text-gray-900 placeholder-gray-500 outline-none focus:bg-white focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all"
@@ -282,7 +282,7 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
                       className="w-full bg-gray-50 border-2 border-gray-200 px-3 py-3 rounded-xl text-sm font-semibold text-gray-900 focus:bg-white focus:border-green-600 outline-none transition-all"
-                      placeholder={translateText("Enter a recognizable title")}
+                      placeholder={t("Enter a recognizable title")}
                     />
                   </div>
 
@@ -293,7 +293,7 @@ export function GalleryView({ items, setItems, isGuest, onSignUp }: GalleryViewP
                       value={editCategory}
                       onChange={(e) => setEditCategory(e.target.value)}
                       className="w-full bg-gray-50 border-2 border-gray-200 px-3 py-3 rounded-xl text-sm font-semibold text-gray-900 focus:bg-white focus:border-green-600 outline-none transition-all"
-                      placeholder={translateText("e.g. Profile, Invoices, Chat Uploads")}
+                      placeholder={t("e.g. Profile, Invoices, Chat Uploads")}
                     />
                   </div>
 

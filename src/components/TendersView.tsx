@@ -12,7 +12,7 @@ interface TendersViewProps {
 }
 
 export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSignUp }: TendersViewProps) {
-  const { translateText } = useLanguage();
+  const { translateText, t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
   const [isApplying, setIsApplying] = useState(false);
@@ -114,7 +114,7 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
           <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text"
-            placeholder={translateText("Search departments or notice titles...")}
+            placeholder={t("Search departments or notice titles...")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-gray-50 text-gray-900 pl-11 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-green-500 transition-colors"
@@ -329,16 +329,16 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
             <form onSubmit={handleCreateTender} className="p-5 space-y-4">
               <div>
                 <label className="text-xs font-bold text-gray-600 block mb-1"><T>Tender Title / Notice</T></label>
-                <input required type="text" value={newTender.title} onChange={e => setNewTender({...newTender, title: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("e.g. Renovation of local primary school")} />
+                <input required type="text" value={newTender.title} onChange={e => setNewTender({...newTender, title: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={t("e.g. Renovation of local primary school")} />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-600 block mb-1"><T>Department / Municipality</T></label>
-                <input required type="text" value={newTender.department} onChange={e => setNewTender({...newTender, department: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("e.g. City of Johannesburg Municipality")} />
+                <input required type="text" value={newTender.department} onChange={e => setNewTender({...newTender, department: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={t("e.g. City of Johannesburg Municipality")} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-gray-600 block mb-1"><T>Estimated Value (Rand)</T></label>
-                  <input required type="text" value={newTender.value} onChange={e => setNewTender({...newTender, value: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("e.g. R4 200 000")} />
+                  <input required type="text" value={newTender.value} onChange={e => setNewTender({...newTender, value: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={t("e.g. R4 200 000")} />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-600 block mb-1"><T>Bidding Closing Date</T></label>
@@ -347,11 +347,11 @@ export function TendersView({ tenders, onAddTender, onLoadSamples, isGuest, onSi
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-600 block mb-1"><T>Specification Document Portal Link (URL)</T></label>
-                <input required type="url" value={newTender.documentUrl} onChange={e => setNewTender({...newTender, documentUrl: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("e.g. https://www.etenders.gov.za/")} />
+                <input required type="url" value={newTender.documentUrl} onChange={e => setNewTender({...newTender, documentUrl: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={t("e.g. https://www.etenders.gov.za/")} />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-600 block mb-1"><T>Scope of Work & Specification Details</T></label>
-                <textarea required rows={4} value={newTender.description} onChange={e => setNewTender({...newTender, description: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={translateText("State standard bidding documents requirements, briefing meetings and CIDB grading requirements...")} />
+                <textarea required rows={4} value={newTender.description} onChange={e => setNewTender({...newTender, description: e.target.value})} className="w-full bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:border-green-500" placeholder={t("State standard bidding documents requirements, briefing meetings and CIDB grading requirements...")} />
               </div>
               <button
                 type="submit"

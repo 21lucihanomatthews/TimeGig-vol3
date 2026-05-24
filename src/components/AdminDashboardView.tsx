@@ -66,7 +66,7 @@ interface AdminDashboardViewProps {
 }
 
 export function AdminDashboardView({ transactions, onApprovePayment, onRejectPayment, users, onAddUser, wallpaper, onSetWallpaper, onToggleLookingForJobs }: AdminDashboardViewProps) {
-  const { translateText } = useLanguage();
+  const { translateText, t } = useLanguage();
   const [successToast, setSuccessToast] = useState<string | null>(null);
   
   // Search filter
@@ -300,7 +300,7 @@ export function AdminDashboardView({ transactions, onApprovePayment, onRejectPay
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder={translateText("Filter name...")}
+                  placeholder={t("Filter name...")}
                   value={searchUserQuery}
                   onChange={(e) => setSearchUserQuery(e.target.value)}
                   className="w-full bg-slate-50 text-xs py-2 pl-8 pr-3 rounded-lg outline-none border border-gray-200 focus:border-indigo-500 focus:bg-white"
